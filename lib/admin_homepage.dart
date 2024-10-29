@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fyp_recipe/admin_addrecipe.dart';
+import 'package:fyp_recipe/admin_editrecipe.dart';
 import 'package:fyp_recipe/background_image_container.dart';
 
 class AdminHomePage extends StatefulWidget {
@@ -25,8 +27,8 @@ class _AdminHomePageState extends State<AdminHomePage> {
         iconTheme: IconThemeData(color: Colors.greenAccent[400]),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
-            color: Colors.greenAccent[400], // Icon color
+            icon: const Icon(Icons.logout),
+            color: Colors.greenAccent[400],
             onPressed: () {
               FirebaseAuth.instance.signOut();
               // Navigate back to login page if necessary
@@ -41,12 +43,64 @@ class _AdminHomePageState extends State<AdminHomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Hello admin, signed in as: ${admin.email!}',
+                  'Hello ${admin.email!}, proceed to:',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color:  Colors.white,
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20), // Spacing between text and buttons
+                // Add Recipes Button
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black87, // Silver-grey background color
+                    foregroundColor: Colors.greenAccent[400],
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20), // Rounded edges
+                    ),
+                    elevation: 5, // Shadow for quality texture
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AdminAddRecipe()),
+                    );
+                  },
+                  child: const Text(
+                    'Add Recipes',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20), // Spacing between buttons
+                // Edit Recipes Button
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black87, // Silver-grey background color
+                    foregroundColor: Colors.greenAccent[400], // Text color
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20), // Rounded edges
+                    ),
+                    elevation: 5, // Shadow for quality texture
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AdminEditRecipe()),
+                    );
+                  },
+                  child: const Text(
+                    'Edit Recipes',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
