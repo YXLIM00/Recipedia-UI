@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  //Hello!
+                  //Welcome!
                   const SizedBox(height: 50.0),
                   const Text(
                     'Welcome!',
@@ -53,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
 
-                  //Welcome back to Recipedia~
+                  //Ready to plan your meals with Recipedia?
                   const SizedBox(height: 10.0),
                   const Text(
                     'Ready to plan your meals with Recipedia?',

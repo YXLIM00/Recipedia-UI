@@ -17,8 +17,9 @@ class AuthStateChange extends StatelessWidget {
           .get();
 
       if (userDoc.exists) {
-        if (userDoc.data() != null && userDoc.get('role') != null) {
-          String role = userDoc.get('role');
+        final data = userDoc.data() as Map<String, dynamic>?;
+        final role = data?['role'] as String?;
+        if (role != null) {
           print('User role found: $role');
           return role;
         } else {
@@ -55,17 +56,13 @@ class AuthStateChange extends StatelessWidget {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (roleSnapshot.hasData) {
-                  final role = roleSnapshot.data!;
-                  if (role == 'admin') {
-                    return const AdminHomePage(); // Navigate to AdminHomePage
-                  } else if (role == 'user') {
-                    return const UserHomePage(); // Navigate to UserHomePage
-                  } else {
-                    return const Center(child: Text('Unknown role'));
-                  }
+                final role = roleSnapshot.data;
+                if (role == 'admin') {
+                  return const AdminHomePage(); // Navigate to AdminHomePage
+                } else if (role == 'user') {
+                  return const UserHomePage(); // Navigate to UserHomePage
                 } else {
-                  return const Center(child: Text('Error: Role not found'));
+                  return const Center(child: Text('Error: Role not recognized'));
                 }
               },
             );
