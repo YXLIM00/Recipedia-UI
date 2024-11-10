@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fyp_recipe/admin_addrecipe.dart';
-import 'package:fyp_recipe/admin_editrecipe.dart';
+import 'package:fyp_recipe/admin_add_recipe.dart';
+import 'package:fyp_recipe/admin_delete_recipe.dart';
+import 'package:fyp_recipe/admin_edit_recipe.dart';
+import 'package:fyp_recipe/auth_state_change.dart';
 import 'package:fyp_recipe/background_image_container.dart';
 
 class AdminHomePage extends StatefulWidget {
@@ -29,9 +31,14 @@ class _AdminHomePageState extends State<AdminHomePage> {
           IconButton(
             icon: const Icon(Icons.logout),
             color: Colors.greenAccent[400],
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
-              // Navigate back to login page if necessary
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              if (mounted) { // Ensure the widget is still in the tree before navigating
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const AuthStateChange()),
+                      (Route<dynamic> route) => false,
+                );
+              }
             },
           ),
         ],
@@ -97,6 +104,32 @@ class _AdminHomePageState extends State<AdminHomePage> {
                   },
                   child: const Text(
                     'Edit Recipes',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20), // Spacing between buttons
+                // Delete Recipes Button
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black87, // Silver-grey background color
+                    foregroundColor: Colors.greenAccent[400], // Text color
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20), // Rounded edges
+                    ),
+                    elevation: 5, // Shadow for quality texture
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AdminDeleteRecipe()),
+                    );
+                  },
+                  child: const Text(
+                    'Delete Recipes',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
