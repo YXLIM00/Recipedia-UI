@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_recipe/auth_state_change.dart';
 import 'package:fyp_recipe/background_image_container.dart';
-import 'package:fyp_recipe/edamam_retrieverecipe.dart';
-import 'package:fyp_recipe/view_recipe_details.dart';
+import 'package:fyp_recipe/edamam_recipe_search.dart';
+import 'package:fyp_recipe/admin_add_recipe_details.dart';
 
 class AdminAddRecipe extends StatefulWidget {
   const AdminAddRecipe({super.key});
@@ -15,8 +15,39 @@ class AdminAddRecipe extends StatefulWidget {
 class AdminAddRecipeState extends State<AdminAddRecipe> {
   final admin = FirebaseAuth.instance.currentUser!;
   List<dynamic> recipes = [];
-  String searchQuery = "chicken"; // Default search term
+  String searchQuery = "e"; // Default search term
   bool isLoading = true;
+
+  // Hardcoded diet and health filters
+  final List<String> availableDiets = [
+    'balanced',
+    'high-protein',
+    'high-fiber',
+    'low-fat',
+    'low-carb',
+    'low-sodium',
+  ];
+
+  final List<String> availableHealthLabels = [
+    'dairy-free',
+    'egg-free',
+    'soy-free',
+    'gluten-free',
+    'pork-free',
+    'red-meat-free',
+    'fish-free',
+    'shellfish-free',
+    'peanut-free',
+    'tree-nut-free',
+    'vegetarian',
+    'vegan',
+    'alcohol-free',
+    'sugar-conscious',
+  ];
+
+  // Selected filters
+  List<String> selectedDiets = [];
+  List<String> selectedHealthLabels = [];
 
   @override
   void initState() {
@@ -27,7 +58,12 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
   void getRecipes() async {
     EdamamRecipeSearch recipeService = EdamamRecipeSearch();
     try {
-      List<dynamic> fetchedRecipes = await recipeService.edamamFetchRecipes(searchQuery);
+      // Pass diet and health filters to the API method
+      List<dynamic> fetchedRecipes = await recipeService.edamamFetchRecipes(
+        searchQuery,
+        diets: selectedDiets,
+        health: selectedHealthLabels,
+      );
       setState(() {
         recipes = fetchedRecipes;
         isLoading = false;
@@ -42,13 +78,92 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
     }
   }
 
+  // Method to open the filter dialog
+  void openFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.grey[900],
+              title: Text(
+                'Filter Recipes',
+                style: TextStyle(color: Colors.greenAccent[400], fontWeight: FontWeight.bold, fontSize: 24),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Diet Filter Checkboxes
+                    Text('Diet Preferences:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+                    Column(
+                      children: availableDiets.map((diet) {
+                        return CheckboxListTile(
+                          activeColor: Colors.greenAccent[400],
+                          checkColor: Colors.black,
+                          title: Text(diet, style: TextStyle(color: Colors.white)),
+                          value: selectedDiets.contains(diet),
+                          onChanged: (bool? value) {
+                            setState(() {
+                              if (value == true) {
+                                selectedDiets.add(diet);
+                              } else {
+                                selectedDiets.remove(diet);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+                    // Health Filter Checkboxes
+                    Text('Allergies & Preferences:', style: TextStyle(color: Colors.white, fontWeight:  FontWeight.bold, fontSize: 20)),
+                    Column(
+                      children: availableHealthLabels.map((label) {
+                        return CheckboxListTile(
+                          activeColor: Colors.greenAccent[400],
+                          checkColor: Colors.black,
+                          title: Text(label, style: TextStyle(color: Colors.white)),
+                          value: selectedHealthLabels.contains(label),
+                          onChanged: (bool? value) {
+                            setState(() {
+                              if (value == true) {
+                                selectedHealthLabels.add(label);
+                              } else {
+                                selectedHealthLabels.remove(label);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    setState(() => isLoading = true);
+                    getRecipes();
+                  },
+                  child: Text('Apply', style: TextStyle(color: Colors.greenAccent[400])),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Recipedia',
+          'Add Recipes',
           style: TextStyle(color: Colors.greenAccent[400]),
         ),
         centerTitle: true,
@@ -60,7 +175,7 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
             color: Colors.greenAccent[400],
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              if (mounted) { // Ensure the widget is still in the tree before navigating
+              if (mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const AuthStateChange()),
                       (Route<dynamic> route) => false,
@@ -75,35 +190,37 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Search for recipes',
-                  hintStyle: TextStyle(color: Colors.white70),
-                  prefixIcon: Icon(Icons.search, color: Colors.white70),
-                  filled: true,
-                  fillColor: Colors.grey[800],
-                  contentPadding: EdgeInsets.symmetric(vertical: 15),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10), // Adjust this value for roundness
-                    borderSide: BorderSide.none, // Removes the border line
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Search for recipes',
+                        hintStyle: TextStyle(color: Colors.white70),
+                        prefixIcon: Icon(Icons.search, color: Colors.white70),
+                        filled: true,
+                        fillColor: Colors.grey[800],
+                        contentPadding: EdgeInsets.symmetric(vertical: 15),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onSubmitted: (value) {
+                        setState(() {
+                          searchQuery = value;
+                          isLoading = true;
+                        });
+                        getRecipes();
+                      },
+                    ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
+                  IconButton(
+                    icon: Icon(Icons.filter_list, color: Colors.greenAccent[400]),
+                    onPressed: openFilterDialog,
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onSubmitted: (value) {
-                  setState(() {
-                    searchQuery = value;
-                    isLoading = true;
-                  });
-                  getRecipes();
-                },
+                ],
               ),
             ),
             Expanded(
@@ -122,7 +239,7 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
                   crossAxisCount: 2, // Two recipes per row
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
-                  childAspectRatio: 0.8, // Adjust the height-to-width ratio as needed
+                  childAspectRatio: 0.8,
                 ),
                 itemCount: recipes.length,
                 itemBuilder: (context, index) {
@@ -130,7 +247,6 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
                 },
               ),
             ),
-
           ],
         ),
       ),
@@ -145,7 +261,6 @@ class RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Extracting the recipe name and image URL
     final String label = recipe['label'] ?? 'Unknown Recipe';
     final String imageUrl = recipe['image'] ?? '';
 
@@ -157,7 +272,6 @@ class RecipeCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Recipe Name with fixed height for consistency
             Container(
               height: 40,
               alignment: Alignment.centerLeft,
@@ -173,7 +287,6 @@ class RecipeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            // Recipe Image
             Expanded(
               flex: 2,
               child: imageUrl.isNotEmpty
@@ -190,26 +303,23 @@ class RecipeCard extends StatelessWidget {
                   : const Icon(Icons.broken_image, size: 80, color: Colors.grey),
             ),
             const SizedBox(height: 8),
-            // View Recipe Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.greenAccent[400],
+                  backgroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+                child: Text('Add Recipe', style: TextStyle(color: Colors.greenAccent[400], fontWeight: FontWeight.bold),),
                 onPressed: () {
-                  // Navigate to RecipeDetailsPage
-                  Navigator.push(
-                    context,
+                  Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => RecipeDetailsPage(recipe: recipe),
+                      builder: (context) => AddRecipeDetailsPage(recipe: recipe),
                     ),
                   );
                 },
-                child: const Text('View Recipe'),
               ),
             ),
           ],
@@ -218,10 +328,3 @@ class RecipeCard extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-
-
