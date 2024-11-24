@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fyp_recipe/page_toggle.dart';
-import 'package:fyp_recipe/user_homepage.dart';
 import 'package:fyp_recipe/admin_homepage.dart';
+import 'package:fyp_recipe/user_info_collect_firstpage.dart';
 
 class AuthStateChange extends StatelessWidget {
   const AuthStateChange({super.key});
@@ -60,7 +60,7 @@ class AuthStateChange extends StatelessWidget {
                 if (role == 'admin') {
                   return const AdminHomePage(); // Navigate to AdminHomePage
                 } else if (role == 'user') {
-                  return const UserHomePage(); // Navigate to UserHomePage
+                  return const UserInfoPage1(); // Navigate to UserHomePage
                 } else {
                   return const Center(child: Text('Error: Role not recognized'));
                 }

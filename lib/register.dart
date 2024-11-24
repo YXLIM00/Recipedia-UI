@@ -69,180 +69,186 @@ class _RegisterPageState extends State<RegisterPage> {
       body: BackgroundContainer(
         child: SafeArea(
           child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  //Hello!
-                  const SizedBox(height: 50.0),
-                  const Text(
-                    'Hello!',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-
-                  //Register below with your details
-                  const SizedBox(height: 10.0),
-                  const Text(
-                    'Register below with your details',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-
-                  //Username Textfield
-                  const SizedBox(height: 50.0),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white70,
-                        border: Border.all(color: Colors.black),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 20.0),
-                        child: TextField(
-                          controller: usernameController,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Username',
-                          ),
-                        ),
+            child: GestureDetector(
+              onTap: () {
+                // Unfocus the text field and hide the keyboard when tapping outside
+                FocusScope.of(context).unfocus();
+              },
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    //Hello!
+                    const SizedBox(height: 50.0),
+                    const Text(
+                      'Hello!',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-                  ),
 
-                  //Email Textfield
-                  const SizedBox(height: 10.0),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white70,
-                        border: Border.all(color: Colors.black),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 20.0),
-                        child: TextField(
-                          controller: emailController,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Email',
-                          ),
-                        ),
+                    //Register below with your details
+                    const SizedBox(height: 10.0),
+                    const Text(
+                      'Register below with your details',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-                  ),
 
-                  //Password Textfield
-                  const SizedBox(height: 10.0),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white70,
-                        border: Border.all(color: Colors.black),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 20.0),
-                        child: TextField(
-                          controller: passwordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Password',
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  //Confirm Password Textfield
-                  const SizedBox(height: 10.0),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white70,
-                        border: Border.all(color: Colors.black),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 20.0),
-                        child: TextField(
-                          controller: confirmPasswordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Confirm Password',
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  //Register Button
-                  const SizedBox(height: 10.0),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                    child: GestureDetector(
-                      onTap: register, //call login function above
+                    //Username Textfield
+                    const SizedBox(height: 50.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.green,
+                          color: Colors.white70,
+                          border: Border.all(color: Colors.black),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Padding(
-                          padding: EdgeInsets.all(20.0),
-                          child: Center(
-                            child: Text(
-                              'Register',
-                              style: TextStyle(
-                                color:  Colors.white,
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 20.0),
+                          child: TextField(
+                            controller: usernameController,
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Username',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    //Email Textfield
+                    const SizedBox(height: 10.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white70,
+                          border: Border.all(color: Colors.black),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 20.0),
+                          child: TextField(
+                            controller: emailController,
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Email',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    //Password Textfield
+                    const SizedBox(height: 10.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white70,
+                          border: Border.all(color: Colors.black),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 20.0),
+                          child: TextField(
+                            controller: passwordController,
+                            obscureText: true,
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Password',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    //Confirm Password Textfield
+                    const SizedBox(height: 10.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white70,
+                          border: Border.all(color: Colors.black),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 20.0),
+                          child: TextField(
+                            controller: confirmPasswordController,
+                            obscureText: true,
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Confirm Password',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    //Register Button
+                    const SizedBox(height: 10.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                      child: GestureDetector(
+                        onTap: register, //call login function above
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: Center(
+                              child: Text(
+                                'Register',
+                                style: TextStyle(
+                                  color:  Colors.white,
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
-                  //Already a member? Login Now
-                  const SizedBox(height: 25.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Already a member?',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white70,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: widget.showLoginPage,
-                        child: const Text(
-                          '  Login Now',
+                    //Already a member? Login Now
+                    const SizedBox(height: 25.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Already a member?',
                           style: TextStyle(
-                            color: Colors.greenAccent,
                             fontWeight: FontWeight.bold,
+                            color: Colors.white70,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                        GestureDetector(
+                          onTap: widget.showLoginPage,
+                          child: const Text(
+                            '  Login Now',
+                            style: TextStyle(
+                              color: Colors.greenAccent,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
 
-                ],
+                  ],
+                ),
               ),
             ),
           ),
