@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_recipe/background_image_container.dart';
-import 'package:fyp_recipe/user_recipe_details_page.dart';
+import 'package:fyp_recipe/user_recommended_recipe_details.dart';
 import 'package:fyp_recipe/auth_state_change.dart';
 
 class UserHomePage extends StatefulWidget {
@@ -187,7 +187,7 @@ class _UserHomePageState extends State<UserHomePage> {
                                   onPressed: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (context) => UserRecipeDetailsPage(recipe: recipe),
+                                        builder: (context) => RecommendedRecipeDetails(recipe: recipe),
                                       ),
                                     );
                                   },
