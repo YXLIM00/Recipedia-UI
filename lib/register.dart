@@ -51,6 +51,7 @@ class _RegisterPageState extends State<RegisterPage> {
       'username': username,
       'email': email,
       'role': 'user', // Default role as 'user'
+      'saved_recipes': [],
     });
   }
 
