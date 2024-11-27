@@ -31,16 +31,46 @@ class _AddRecipeDetailsPageState extends State<AddRecipeDetailsPage> {
     final String url = widget.recipe['url'] ?? '';
     final int totalTime = widget.recipe['totalTime']?.toInt() ?? 0;
 
+    // Convert double values in totalNutrients and totalDaily
+    Map<String, dynamic> formattedTotalNutrients = {};
+    Map<String, dynamic> formattedTotalDaily = {};
+
+    if (totalNutrients is Map<String, dynamic>) {
+      totalNutrients.forEach((key, value) {
+        if (value is Map<String, dynamic> && value['quantity'] is double) {
+          formattedTotalNutrients[key] = {
+            ...value,
+            'quantity': value['quantity'].toStringAsFixed(1), // Format to 1 decimal place
+          };
+        } else {
+          formattedTotalNutrients[key] = value;
+        }
+      });
+    }
+
+    if (totalDaily is Map<String, dynamic>) {
+      totalDaily.forEach((key, value) {
+        if (value is Map<String, dynamic> && value['quantity'] is double) {
+          formattedTotalDaily[key] = {
+            ...value,
+            'quantity': value['quantity'].toStringAsFixed(1), // Format to 1 decimal place
+          };
+        } else {
+          formattedTotalDaily[key] = value;
+        }
+      });
+    }
+
 
     try {
       await FirebaseFirestore.instance.collection('recipes').doc(label).set({
         'label': label,
         'image': image,
         'yield': servings,
-        'calories': calories,
-        'caloriesPerServing': servings > 0 && calories != null ? (calories / servings).toStringAsFixed(0): 'N/A',
-        'totalNutrients': totalNutrients,
-        'totalDaily': totalDaily,
+        'calories': calories?.toStringAsFixed(1),
+        'caloriesPerServing': servings > 0 && calories != null ? (calories / servings).toStringAsFixed(1): 'N/A',
+        'totalNutrients': formattedTotalNutrients,
+        'totalDaily': formattedTotalDaily,
         'dietLabels': dietLabels,
         'healthLabels': healthLabels,
         'cautions': cautions,
