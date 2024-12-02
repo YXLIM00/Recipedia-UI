@@ -15,7 +15,7 @@ class AdminAddRecipe extends StatefulWidget {
 class AdminAddRecipeState extends State<AdminAddRecipe> {
   final admin = FirebaseAuth.instance.currentUser!;
   List<dynamic> recipes = [];
-  String searchQuery = "e"; // Default search term
+  String searchQuery = "chicken"; // Default search term
   bool isLoading = true;
 
   // Hardcoded diet and health filters

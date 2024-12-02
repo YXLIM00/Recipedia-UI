@@ -40,7 +40,7 @@ class _AddRecipeDetailsPageState extends State<AddRecipeDetailsPage> {
         if (value is Map<String, dynamic> && value['quantity'] is double) {
           formattedTotalNutrients[key] = {
             ...value,
-            'quantity': value['quantity'].toStringAsFixed(1), // Format to 1 decimal place
+            'quantity': double.parse(value['quantity'].toStringAsFixed(1)), // Format to 1 decimal place first then convert back to double
           };
         } else {
           formattedTotalNutrients[key] = value;
@@ -53,7 +53,7 @@ class _AddRecipeDetailsPageState extends State<AddRecipeDetailsPage> {
         if (value is Map<String, dynamic> && value['quantity'] is double) {
           formattedTotalDaily[key] = {
             ...value,
-            'quantity': value['quantity'].toStringAsFixed(1), // Format to 1 decimal place
+            'quantity': double.parse(value['quantity'].toStringAsFixed(1)), // Format to 1 decimal place first then convert back to double
           };
         } else {
           formattedTotalDaily[key] = value;
@@ -67,8 +67,8 @@ class _AddRecipeDetailsPageState extends State<AddRecipeDetailsPage> {
         'label': label,
         'image': image,
         'yield': servings,
-        'calories': calories?.toStringAsFixed(1),
-        'caloriesPerServing': servings > 0 && calories != null ? (calories / servings).toStringAsFixed(1): 'N/A',
+        'calories': double.parse(calories!.toStringAsFixed(1)),
+        'caloriesPerServing': servings > 0 ? double.parse((calories / servings).toStringAsFixed(1)): 'N/A',
         'totalNutrients': formattedTotalNutrients,
         'totalDaily': formattedTotalDaily,
         'dietLabels': dietLabels,
@@ -97,7 +97,7 @@ class _AddRecipeDetailsPageState extends State<AddRecipeDetailsPage> {
     final String image = widget.recipe['image'] ?? '';
     final int servings = (widget.recipe['yield'] ?? 1).toDouble().toInt();
     final double? calories = widget.recipe['calories']?.toDouble();
-    final String caloriesPerServing = (servings > 0 && calories != null) ? '${(calories / servings).toStringAsFixed(0)} kcal per serving' : 'N/A';
+    final String caloriesPerServing = (servings > 0 && calories != null) ? '${double.parse((calories / servings).toStringAsFixed(1))} kcal per serving' : 'N/A';
     final String protein = widget.recipe['totalNutrients']?['PROCNT']?['quantity']?.toStringAsFixed(1) ?? 'N/A';
     final String fat = widget.recipe['totalNutrients']?['FAT']?['quantity']?.toStringAsFixed(1) ?? 'N/A';
     final String carbs = widget.recipe['totalNutrients']?['CHOCDF']?['quantity']?.toStringAsFixed(1) ?? 'N/A';

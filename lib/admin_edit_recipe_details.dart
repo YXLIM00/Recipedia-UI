@@ -91,31 +91,13 @@ class _EditRecipeDetailsPageState extends State<EditRecipeDetailsPage> {
   }
 
 
-  Widget buildTextField(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '$label:',
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          value.isEmpty ? 'N/A' : value,
-          style: const TextStyle(fontSize: 16, color: Colors.white),
-        ),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final String recipeName = recipeData?['name'] ?? 'No Title';
+    final String recipeName = recipeData?['label'] ?? 'No Title';
     final String imageUrl = recipeData?['image'] ?? '';
     final int servings = (recipeData?['servings'] ?? 1).toDouble().toInt();
     final double? calories = recipeData?['calories']?.toDouble();
