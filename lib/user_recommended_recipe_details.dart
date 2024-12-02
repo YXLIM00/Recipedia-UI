@@ -120,18 +120,22 @@ class _RecommendedRecipeDetailsState extends State<RecommendedRecipeDetails> {
               ),
               const SizedBox(height: 16),
 
-              // Recipe Name
               // Recipe Name with Favorite Icon
               Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center, // Ensures proper alignment
                   children: [
-                    Text(
-                      recipe['label'],
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
+                    Flexible(
+                      child: Text(
+                        recipe['label'],
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                        ),
+                        softWrap: true, // Allows the text to wrap to the next line
+                        maxLines: 2, // Limits text to a maximum of 2 lines
                       ),
                     ),
                     const SizedBox(width: 10),
