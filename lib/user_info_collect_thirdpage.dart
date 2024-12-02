@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fyp_recipe/background_image_container.dart';
-import 'package:fyp_recipe/user_dietary_recommendation_page.dart';
+import 'package:fyp_recipe/user_home_page.dart';
 
 class UserInfoPage3 extends StatefulWidget {
   const UserInfoPage3({super.key});
@@ -34,7 +34,7 @@ class UserInfoPage3State extends State<UserInfoPage3> {
   ];
 
   // List to store selected allergies
-  List<String> _selectedAllergies = [];
+  final List<String> _selectedAllergies = [];
 
   // Function to save data to Firestore
   Future<void> _saveDietData() async {
@@ -47,7 +47,7 @@ class UserInfoPage3State extends State<UserInfoPage3> {
         }, SetOptions(merge: true));
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const UserDietaryRecommendationPage()),
+          MaterialPageRoute(builder: (context) => const UserHomePage()),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(

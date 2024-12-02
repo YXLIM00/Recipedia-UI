@@ -3,8 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:fyp_recipe/background_image_container.dart';
-import 'package:fyp_recipe/user_dietary_recommendation_page.dart';
-import 'package:fyp_recipe/user_homepage.dart';
+import 'package:fyp_recipe/user_home_page.dart';
 import 'package:fyp_recipe/user_info_collect_secondpage.dart';
 
 class UserInfoPage1 extends StatefulWidget {
@@ -54,7 +53,7 @@ class UserInfoPage1State extends State<UserInfoPage1> {
         // If user data is already present, navigate to UserHomePage
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const UserDietaryRecommendationPage()),
+          MaterialPageRoute(builder: (context) => const UserHomePage()),
         );
 
       }
