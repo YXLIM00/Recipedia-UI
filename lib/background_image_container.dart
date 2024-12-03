@@ -17,7 +17,7 @@ class BackgroundContainer extends StatelessWidget {
       child: Stack(
         children: [
           Container(
-            color: Colors.black.withOpacity(0.1), // Dark overlay with transparency
+            color: Colors.black.withOpacity(0.65), // Dark overlay with transparency
           ),
           child, // Content of each page
         ],
