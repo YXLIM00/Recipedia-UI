@@ -14,8 +14,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: AuthStateChange(),
+    return MaterialApp(
+      theme: ThemeData(fontFamily: 'Poppins'),
+      home: const AuthStateChange(),
     );
   }
 }
