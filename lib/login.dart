@@ -16,6 +16,10 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
+  // Validation messages
+  String? emailError;
+  String? passwordError;
+
   @override
   void dispose(){
     emailController.dispose();
@@ -23,12 +27,131 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  //login function
-  Future login() async{
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: emailController.text.trim(),
-      password: passwordController.text.trim(),
-    );
+  bool validateEmail(String email) {
+    // Check if empty
+    if (email.isEmpty) {
+      setState(() {
+        emailError = "Email cannot be empty!";
+      });
+      return false;
+    }
+
+    // Check the total length of the email
+    if (email.length < 14) {
+      setState(() {
+        emailError = "Email must be at least 14 characters long!";
+      });
+      return false;
+    } else if (email.length > 40) {
+      setState(() {
+        emailError = "Email cannot exceed 40 characters!";
+      });
+      return false;
+    }
+
+    // Validate email format, including domain and extension
+    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
+      setState(() {
+        emailError = "Enter a valid email address! \n(eg. username@gmail.com)";
+      });
+      return false;
+    }
+
+
+    // Extract the part before the '@'
+    String localPart = email.split('@')[0];
+
+    // Validate the local part of the email
+    if (localPart.length < 4) {
+      setState(() {
+        emailError = "The part before '@' must be at least 4 characters long!";
+      });
+      return false;
+    } else if (localPart.length > 20) {
+      setState(() {
+        emailError = "The part before '@' cannot exceed 20 characters!";
+      });
+      return false;
+    } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+$').hasMatch(localPart)) {
+      setState(() {
+        emailError = "The part before '@' can only contain:\n"
+            "- Letters (a -z, A - Z)\n"
+            "- Numbers (0 - 9)\n"
+            "- Special characters (., _, %, +, -)";
+      });
+      return false;
+    }
+
+    // If all validations pass
+    setState(() {
+      emailError = null;
+    });
+    return true;
+  }
+
+  bool validatePassword(String password) {
+    if (password.isEmpty) {
+      setState(() {
+        passwordError = "Password cannot be empty!";
+      });
+      return false;
+    }
+
+    // Validate total length of the password
+    if (password.length < 8) {
+      setState(() {
+        passwordError = "Password must be at least 8 characters!";
+      });
+      return false;
+    } else if (password.length > 40) {
+      setState(() {
+        passwordError = "Password cannot exceed 40 characters!";
+      });
+      return false;
+    }
+
+    // Validate password format
+    if (!RegExp(r'(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@!%*?&])[A-Za-z\d@!%*?&]+$')
+        .hasMatch(password)) {
+      setState(() {
+        passwordError = "Password must contain:\n"
+            "- At least one uppercase letter (A - Z)\n"
+            "- At least one lowercase letter (a - z)\n"
+            "- At least one number (0 - 9)\n"
+            "- At least one allowed special character\n  (@, !, %, *, ?, &)";
+      });
+      return false;
+    }
+
+    setState(() {
+      passwordError = null;
+    });
+    return true;
+  }
+
+
+  Future login() async {
+    final isValidEmail = validateEmail(emailController.text.trim());
+    final isValidPassword = validatePassword(passwordController.text.trim());
+
+    if (isValidEmail && isValidPassword) {
+      try {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+        // Successfully logged in
+        return AlertDialog(
+          content: Text("✅ Account Login Successful!"),
+        );
+      } catch (e) {
+        print(e);
+        // Handle login error (e.g., show a Snackbar with the error message)
+        return AlertDialog(
+          content: Text("❌ Account Login Failed! \n  Please check your credentials again"),
+        );
+      }
+    }
   }
 
 
@@ -47,72 +170,111 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    //Welcome!
+                    //Recipedia
                     const SizedBox(height: 50.0),
                     const Text(
-                      'Welcome!',
+                      'Recipedia',
                       style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 40,
                       ),
                     ),
 
-                    //Ready to plan your meals with Recipedia?
+                    //Cook Easy, Eat Healthy
                     const SizedBox(height: 10.0),
                     const Text(
-                      'Ready to plan your meals with Recipedia?',
+                      'Cook Easy, Eat Healthy',
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 26,
                       ),
                     ),
 
-                    //Email Textfield
+                    // Email TextField
                     const SizedBox(height: 50.0),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          border: Border.all(color: Colors.black),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20.0),
-                          child: TextField(
-                            controller: emailController,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Email',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(
+                                color: emailError == null ? Colors.black : Colors.red,
+                                width: 3,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 20.0),
+                              child: TextField(
+                                controller: emailController,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: 'Email',
+                                  hintStyle: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.bold),
+                                  counterText: "", // Removes the character counter display
+                                ),
+                                maxLength: 40, // Set maximum length
+                                onChanged: (value) => validateEmail(value),
+                              ),
                             ),
                           ),
-                        ),
+                          if (emailError != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 5.0),
+                              child: Text(
+                                emailError!,
+                                style: TextStyle(color: Colors.redAccent[400], fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-
-                    //Password Textfield
-                    const SizedBox(height: 10.0),
+                    const SizedBox(height: 20.0),
+                    // Password TextField
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          border: Border.all(color: Colors.black),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20.0),
-                          child: TextField(
-                            controller: passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Password',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(
+                                color: passwordError == null ? Colors.black : Colors.red,
+                                width: 3,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 20.0),
+                              child: TextField(
+                                controller: passwordController,
+                                obscureText: true,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: 'Password',
+                                  hintStyle: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.bold),
+                                  counterText: "", // Removes the character counter display
+                                ),
+                                maxLength: 40, // Set maximum length
+                                onChanged: (value) => validatePassword(value),
+                              ),
                             ),
                           ),
-                        ),
+                          if (passwordError != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 5.0),
+                              child: Text(
+                                passwordError!,
+                                style: TextStyle(color: Colors.redAccent[400], fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
 
@@ -133,11 +295,15 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                               );
                             },
-                            child: const Text(
+                            child: Text(
                               'Forgot Password?',
                               style: TextStyle(
-                                color: Colors.greenAccent,
-                                fontWeight: FontWeight.bold,
+                                color: Colors.cyanAccent,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 18,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.cyanAccent,
+                                decorationThickness: 2,
                               ),
                             ),
                           ),
@@ -146,14 +312,14 @@ class _LoginPageState extends State<LoginPage> {
                     ),
 
                     //Login Button
-                    const SizedBox(height: 10.0),
+                    const SizedBox(height: 40.0),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25.0),
                       child: GestureDetector(
                         onTap: login, //call login function above
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.green,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Padding(
@@ -162,9 +328,9 @@ class _LoginPageState extends State<LoginPage> {
                               child: Text(
                                 'Login',
                                 style: TextStyle(
-                                  color:  Colors.white,
+                                  color:  Colors.black,
+                                  fontWeight: FontWeight.w900,
                                   fontSize: 26,
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
@@ -174,24 +340,29 @@ class _LoginPageState extends State<LoginPage> {
                     ),
 
                     //Not a member yet? Register Now
-                    const SizedBox(height: 25.0),
+                    const SizedBox(height: 10.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          'Not a member yet?',
+                          'Not a member yet?  ',
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
                           ),
                         ),
                         GestureDetector(
                           onTap: widget.showRegisterPage,
-                          child: const Text(
-                            '  Register Now',
+                          child: Text(
+                            'Register Now',
                             style: TextStyle(
-                              color: Colors.greenAccent,
-                              fontWeight: FontWeight.bold,
+                              color: Colors.cyanAccent,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.cyanAccent,
+                              decorationThickness: 2,
                             ),
                           ),
                         ),

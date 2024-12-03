@@ -18,6 +18,12 @@ class _RegisterPageState extends State<RegisterPage> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
+  // Validation messages
+  String? usernameError;
+  String? emailError;
+  String? passwordError;
+  String? confirmPasswordError;
+
   @override
   void dispose(){
     usernameController.dispose();
@@ -27,23 +33,208 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  bool validateUsername(String username) {
+    if (username.isEmpty) {
+      setState(() {
+        usernameError = "Username cannot be empty!";
+      });
+      return false;
+    } else if (username.length < 4) {
+      setState(() {
+        usernameError = "Username must be at least 4 characters long!";
+      });
+      return false;
+    } else if (username.length > 40) {
+      setState(() {
+        usernameError = "Username cannot exceed 40 characters!";
+      });
+      return false;
+    }
+    setState(() {
+      usernameError = null;
+    });
+    return true;
+  }
+
+
+  Future<bool> validateEmail(String email) async {
+    if (email.isEmpty) {
+      setState(() {
+        emailError = "Email cannot be empty!";
+      });
+      return false;
+    }
+
+    // Check total length of the email
+    if (email.length < 14) {
+      setState(() {
+        emailError = "Email must be at least 14 characters long!";
+      });
+      return false;
+    } else if (email.length > 40) {
+      setState(() {
+        emailError = "Email cannot exceed 40 characters!";
+      });
+      return false;
+    }
+
+    // Validate email format, including domain and extension
+    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
+      setState(() {
+        emailError = "Enter a valid email address! \n(eg. username@gmail.com)";
+      });
+      return false;
+    }
+
+
+    // Extract the part before the '@'
+    String localPart = email.split('@')[0];
+
+    // Validate the local part of the email
+    if (localPart.length < 4) {
+      setState(() {
+        emailError = "The part before '@' must be at least 4 characters long!";
+      });
+      return false;
+    } else if (localPart.length > 20) {
+      setState(() {
+        emailError = "The part before '@' cannot exceed 20 characters!";
+      });
+      return false;
+    } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+$').hasMatch(localPart)) {
+      setState(() {
+        emailError = "The part before '@' can only contain:\n"
+            "- Letters (a - z, A - Z)\n"
+            "- Numbers (0 - 9)\n"
+            "- Special characters (. _ % + -)";
+      });
+      return false;
+    }
+
+    // If all validations pass
+    setState(() {
+      emailError = null;
+    });
+    return true;
+  }
+
+
+  bool validatePassword(String password) {
+    if (password.isEmpty) {
+      setState(() {
+        passwordError = "Password cannot be empty!";
+      });
+      return false;
+    }
+
+    // Validate total length of the password
+    if (password.length < 8) {
+      setState(() {
+        passwordError = "Password must be at least 8 characters!";
+      });
+      return false;
+    } else if (password.length > 40) {
+      setState(() {
+        passwordError = "Password cannot exceed 40 characters!";
+      });
+      return false;
+    }
+
+    // Validate password format
+    if (!RegExp(r'(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@!%*?&])[A-Za-z\d@!%*?&]+$')
+        .hasMatch(password)) {
+      setState(() {
+        passwordError = "Password must contain:\n"
+            "- At least one uppercase letter (A - Z)\n"
+            "- At least one lowercase letter (a - z)\n"
+            "- At least one number (0 - 9)\n"
+            "- At least one allowed special character\n  (@, !, %, *, ?, &)";
+      });
+      return false;
+    }
+
+    setState(() {
+      passwordError = null;
+    });
+    return true;
+  }
+
+
+  bool validateConfirmPassword(String confirmPassword) {
+    if (confirmPassword.isEmpty) {
+      setState(() {
+        confirmPasswordError = "Confirm password cannot be empty!";
+      });
+      return false;
+    } else if (confirmPassword != passwordController.text) {
+      setState(() {
+        confirmPasswordError = "Passwords do not match!";
+      });
+      return false;
+    } else if (confirmPassword.length > 40) { // Add length validation
+      setState(() {
+        confirmPasswordError = "Password cannot exceed 40 characters!";
+      });
+      return false;
+    }
+
+    setState(() {
+      confirmPasswordError = null;
+    });
+    return true;
+  }
+
+
   // Register function
   Future register() async {
-    if (passwordConfirmed()) {
-      // Create user in Firebase Auth
+    final isValidUsername = validateUsername(usernameController.text.trim());
+    final isValidEmail = await validateEmail(emailController.text.trim());
+    final isValidPassword = validatePassword(passwordController.text.trim());
+    final isValidConfirmPassword = validateConfirmPassword(confirmPasswordController.text.trim());
+
+    if (isValidEmail && isValidUsername && isValidPassword && isValidConfirmPassword) {
       try {
-        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        // Create user with Firebase Authentication
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
 
-        // Add user details to Firestore using UID as document ID
-        addUserDetails(userCredential.user!.uid, usernameController.text.trim(), emailController.text.trim());
-      } catch (e) {
-        print("Error: $e");
+        // Add user details to Firestore with UID as document ID
+        await addUserDetails(
+          userCredential.user!.uid, // UID of the newly created user
+          usernameController.text.trim(), // Get username from the input field
+          emailController.text.trim(), // Get email from the input field
+        );
+
+        // Navigate to the next page (e.g., HomePage)
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: Text("✅ Account Registration Successful!"),
+          ),
+        );
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'email-already-in-use') {
+          setState(() {
+            emailError = "This email is already registered. \nPlease use another email.";
+          });
+        } else {
+          print(e);
+          // Handle other registration errors
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              content: Text("❌ Account Registration Failed! \nPlease check your credentials again"),
+            ),
+          );
+        }
       }
     }
   }
+
+
 
   // Add user details to Firestore with UID as document ID
   Future addUserDetails(String uid, String username, String email) async {
@@ -53,15 +244,6 @@ class _RegisterPageState extends State<RegisterPage> {
       'role': 'user', // Default role as 'user'
       'saved_recipes': [],
     });
-  }
-
-  bool passwordConfirmed(){
-    if(passwordController.text.trim() == confirmPasswordController.text.trim()){
-      return true;
-    }
-    else{
-      return false;
-    }
   }
 
   @override
@@ -79,131 +261,68 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    //Hello!
+                    //Welcome!
                     const SizedBox(height: 50.0),
                     const Text(
-                      'Hello!',
+                      'Welcome!',
                       style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 40,
                       ),
                     ),
 
-                    //Register below with your details
+                    //Register your details below
                     const SizedBox(height: 10.0),
                     const Text(
-                      'Register below with your details',
+                      'Register your details below',
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 26,
                       ),
                     ),
 
-                    //Username Textfield
-                    const SizedBox(height: 50.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          border: Border.all(color: Colors.black),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20.0),
-                          child: TextField(
-                            controller: usernameController,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Username',
-                            ),
-                          ),
-                        ),
-                      ),
+                    // Username TextField
+                    _buildTextField(
+                      label: 'Username',
+                      controller: usernameController,
+                      errorText: usernameError,
+                      validator: validateUsername,
                     ),
-
-                    //Email Textfield
-                    const SizedBox(height: 10.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          border: Border.all(color: Colors.black),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20.0),
-                          child: TextField(
-                            controller: emailController,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Email',
-                            ),
-                          ),
-                        ),
-                      ),
+                    // Email TextField
+                    _buildTextField(
+                      label: 'Email',
+                      controller: emailController,
+                      errorText: emailError,
+                      validator: validateEmail,
                     ),
-
-                    //Password Textfield
-                    const SizedBox(height: 10.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          border: Border.all(color: Colors.black),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20.0),
-                          child: TextField(
-                            controller: passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Password',
-                            ),
-                          ),
-                        ),
-                      ),
+                    // Password TextField
+                    _buildTextField(
+                      label: 'Password',
+                      controller: passwordController,
+                      errorText: passwordError,
+                      validator: validatePassword,
+                      isObscure: true,
                     ),
-
-                    //Confirm Password Textfield
-                    const SizedBox(height: 10.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
-                          border: Border.all(color: Colors.black),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20.0),
-                          child: TextField(
-                            controller: confirmPasswordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Confirm Password',
-                            ),
-                          ),
-                        ),
-                      ),
+                    // Confirm Password TextField
+                    _buildTextField(
+                      label: 'Confirm Password',
+                      controller: confirmPasswordController,
+                      errorText: confirmPasswordError,
+                      validator: validateConfirmPassword,
+                      isObscure: true,
                     ),
 
                     //Register Button
-                    const SizedBox(height: 10.0),
+                    const SizedBox(height: 40.0),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25.0),
                       child: GestureDetector(
-                        onTap: register, //call login function above
+                        onTap: register, //call register function above
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.green,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Padding(
@@ -212,9 +331,9 @@ class _RegisterPageState extends State<RegisterPage> {
                               child: Text(
                                 'Register',
                                 style: TextStyle(
-                                  color:  Colors.white,
+                                  color:  Colors.black,
                                   fontSize: 26,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w900,
                                 ),
                               ),
                             ),
@@ -224,24 +343,29 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
 
                     //Already a member? Login Now
-                    const SizedBox(height: 25.0),
+                    const SizedBox(height: 10.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          'Already a member?',
+                          'Already a member?  ',
                           style: TextStyle(
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white70,
+                            fontSize: 18,
                           ),
                         ),
                         GestureDetector(
                           onTap: widget.showLoginPage,
-                          child: const Text(
-                            '  Login Now',
+                          child: Text(
+                            'Login Now',
                             style: TextStyle(
-                              color: Colors.greenAccent,
-                              fontWeight: FontWeight.bold,
+                              color: Colors.cyanAccent,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.cyanAccent,
+                              decorationThickness: 2,
                             ),
                           ),
                         ),
@@ -257,4 +381,57 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
+
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    required String? errorText,
+    required Function(String) validator,
+    bool isObscure = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(
+                color: errorText == null ? Colors.black : Colors.red,
+                width: 3,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20.0),
+              child: TextField(
+                controller: controller,
+                obscureText: isObscure,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: label,
+                  hintStyle: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.bold),
+                  counterText: "", // Removes the character counter display
+                ),
+                maxLength: 40,
+                onChanged: validator,
+              ),
+            ),
+          ),
+          if (errorText != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 5.0),
+              child: Text(
+                errorText,
+                style: TextStyle(color: Colors.redAccent[400], fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
 }
+
+
