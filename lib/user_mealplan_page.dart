@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fyp_recipe/auth_state_change.dart';
 import 'package:fyp_recipe/user_bottom_nav_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -256,11 +257,40 @@ class UserMealplanPageState extends State<UserMealplanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Meal Plan"),
+        title: Text(
+          'Recipedia',
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.black,
+        iconTheme: IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            color: Colors.white,
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              if (mounted) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => const AuthStateChange()),
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
+            SizedBox(height: 20),
+            Center(
+              child: Text(
+                'Meal Plan',
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.indigo[400]),
+              ),
+            ),
+
+            SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -354,7 +384,7 @@ class UserMealplanPageState extends State<UserMealplanPage> {
             ),
           ),
           const SizedBox(height: 10),
-          const UserBottomNavBar(currentIndex: 2),
+          const UserBottomNavBar(currentIndex: 3),
         ],
       ),
     );
