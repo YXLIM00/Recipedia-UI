@@ -141,7 +141,7 @@ class UserInfoPage3State extends State<UserInfoPage3> {
       items: _allergyOptions
           .map((allergy) => MultiSelectItem<String>(allergy, allergy))
           .toList(),
-      title: Text("Select Your Allergies:", style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+      title: Text("Allergies:", style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
       selectedColor: Colors.indigo,
       buttonText: Text(" Choose Here", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
       decoration: BoxDecoration(
@@ -233,7 +233,7 @@ class UserInfoPage3State extends State<UserInfoPage3> {
                 const SizedBox(height: 40),
                 Center(
                   child: Text(
-                    'Dietary Preferences',
+                    'Dietary Information',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 26,

@@ -204,7 +204,7 @@ class UserInfoPage2State extends State<UserInfoPage2> {
                 SizedBox(height: 40),
                 Center(
                   child: Text(
-                    'Health Condition',
+                    'Health Information',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 26,
