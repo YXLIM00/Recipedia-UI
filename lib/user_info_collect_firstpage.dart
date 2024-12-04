@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
-import 'package:fyp_recipe/background_image_container.dart';
+import 'package:fyp_recipe/auth_state_change.dart';
 import 'package:fyp_recipe/user_home_page.dart';
 import 'package:fyp_recipe/user_info_collect_secondpage.dart';
 
@@ -49,7 +49,12 @@ class UserInfoPage1State extends State<UserInfoPage1> {
           userDoc['age'] != null &&
           userDoc['height'] != null &&
           userDoc['weight'] != null &&
-          userDoc['activity_factor'] != null) {
+          userDoc['activity_factor'] != null &&
+          userDoc['blood_glucose_level'] != null &&
+          userDoc['blood_pressure_level'] != null &&
+          userDoc['blood_cholesterol_level'] != null &&
+          userDoc['diabetes'] != null &&
+          userDoc['diet_purpose'] != null) {
         // If user data is already present, navigate to UserHomePage
         Navigator.pushReplacement(
           context,
@@ -61,412 +66,584 @@ class UserInfoPage1State extends State<UserInfoPage1> {
   }
 
   Future<void> _saveUserData() async {
-    final User? user = _auth.currentUser;
-    if (user != null) {
-      await _firestore.collection('users').doc(user.uid).set({
-        'sex': _selectedSex,
-        'age': _age, // Save age as a double
-        'height': _height,
-        'weight': _weight,
-        'activity_factor': activityFactors[_selectedActivityFactor],
-      }, SetOptions(merge: true));
+    // List to hold missing fields
+    List<String> missingFields = [];
 
-      // Navigate to the next page
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => UserInfoPage2()),
+    // Check for missing fields
+    if (_selectedSex == null) missingFields.add('Sex');
+    if (_age == null) missingFields.add('Age');
+    if (_height == null) missingFields.add('Height');
+    if (_weight == null) missingFields.add('Weight');
+    if (_selectedActivityFactor == null) missingFields.add('Activity Factor');
+
+    // If there are missing fields, show an error message
+    if (missingFields.isNotEmpty) {
+      String missingFieldsMessage = missingFields.join(', ');
+      String errorMessage = 'Please fill the missing field(s): $missingFieldsMessage';
+      _showErrorDialog(errorMessage);
+      return; // Return early if validation fails
+    }
+
+    // Validate age, height, and weight input
+    String? errorMessage = '';
+    if (_age! < 1 || _age! > 120) {
+      errorMessage = 'Please enter a valid age (1-120)';
+    } else if (_height! < 20 || _height! > 200) {
+      errorMessage = 'Please enter a valid height (20-200 cm)';
+    } else if (_weight! < 10 || _weight! > 200) {
+      errorMessage = 'Please enter a valid weight (10-200 kg)';
+    }
+
+    // If there is an error message, show it in an AlertDialog
+    if (errorMessage.isNotEmpty) {
+      _showErrorDialog(errorMessage);
+      return; // Return early to prevent further execution
+    }
+
+    try {
+      final User? user = _auth.currentUser;
+      if (user != null) {
+        // Save data to Firestore
+        await _firestore.collection('users').doc(user.uid).set({
+          'sex': _selectedSex,
+          'age': _age, // Save age as a double
+          'height': _height,
+          'weight': _weight,
+          'activity_factor': activityFactors[_selectedActivityFactor],
+        }, SetOptions(merge: true));
+
+        // Navigate to the next page after saving data
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => UserInfoPage2()),
+        );
+      }
+    } catch (e) {
+      // Handle any errors during the save operation
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save user data: $e')),
       );
     }
   }
 
-  Widget _buildNeumorphicRadio(String label, String value) {
-    return GestureDetector(
-      onTap: () => setState(() => _selectedSex = value), // Only sets _selectedSex
-      child: Container(
-        decoration: BoxDecoration(
-          // Applying gradient for a more 3D look
-          gradient: (_selectedSex == value)
-              ? LinearGradient(
-            colors: [Colors.greenAccent.shade200, Colors.greenAccent.shade400],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          )
-              : LinearGradient(
-            colors: [Colors.white, Colors.grey.shade200],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            // Darker shadow for a deeper 3D effect
-            BoxShadow(
-              color: Colors.grey.shade500,
-              offset: Offset(5, 5),
-              blurRadius: 10,
-              spreadRadius: 1,
-            ),
-            BoxShadow(
-              color: Colors.white,
-              offset: Offset(-5, -5),
-              blurRadius: 10,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Text(
-          label,
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Missing or Invalid Value',
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: (_selectedSex == value) ? Colors.white : Colors.black,
+            color: Colors.black,
+            fontSize: 26,
+            fontWeight: FontWeight.bold
           ),
         ),
+        content: Text(message, style: TextStyle(color: Colors.black, fontSize: 16),),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: Text('OK', style: TextStyle(color: Colors.indigo, fontSize: 16, fontWeight: FontWeight.bold),),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildNeumorphicTextField(TextEditingController controller, String hintText, bool isHeightField) {
-    return StatefulBuilder(
-      builder: (context, setState) {
-        // Function to validate the input value
-        bool isValidInput(String value) {
-          final regex = RegExp(r'^\d+(\.\d{1,2})?$'); // Regex to allow only two decimal places
-          final input = double.tryParse(value);
-          if (input == null || !regex.hasMatch(value)) return false;
-          if (isHeightField) {
-            return input >= 20 && input <= 200; // Height validation range
-          } else {
-            return input >= 10 && input <= 200; // Weight validation range
-          }
-        }
-
-        // Determine the current input validity
-        bool isValid = isValidInput(controller.text);
-
-        return Container(
-          decoration: BoxDecoration(
-            // Applying gradient for a more 3D look
-            gradient: isValid
-                ? LinearGradient(
-              colors: [Colors.greenAccent.shade200, Colors.greenAccent.shade400],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            )
-                : LinearGradient(
-              colors: [Colors.white, Colors.grey.shade200],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              // Darker shadow for a deeper 3D effect
-              BoxShadow(
-                color: Colors.grey.shade500,
-                offset: Offset(5, 5),
-                blurRadius: 10,
-                spreadRadius: 1,
-              ),
-              BoxShadow(
-                color: Colors.white,
-                offset: Offset(-5, -5),
-                blurRadius: 10,
-                spreadRadius: 1,
-              ),
-            ],
+  Widget _buildNeumorphicRadio(String label, String value) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey.shade200],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade500,
+            offset: Offset(5, 5),
+            blurRadius: 10,
+            spreadRadius: 1,
           ),
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: TextField(
-            controller: controller,
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')), // Limit to 2 decimal places
-            ],
-            decoration: InputDecoration(
-              hintText: hintText,
-              hintStyle: TextStyle(color: Colors.black),
-              border: InputBorder.none,
-            ),
+          BoxShadow(
+            color: Colors.white,
+            offset: Offset(-5, -5),
+            blurRadius: 10,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Place text and radio apart
+        children: [
+          Text(
+            label,
             style: TextStyle(
-              color: isValid ? Colors.white : Colors.black, // Change text color based on validity
-              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black, // Text color remains constant
             ),
-            onChanged: (value) {
-              setState(() {}); // Trigger UI update for color change
-              if (isHeightField) {
-                _height = double.tryParse(value);
-              } else {
-                _weight = double.tryParse(value);
-              }
-            },
           ),
-        );
-      },
+          Radio<String>(
+            value: value,
+            groupValue: _selectedSex,
+            onChanged: (String? newValue) {
+              setState(() => _selectedSex = newValue!);
+            },
+            activeColor: Colors.indigo.shade400, // Change only the radio button's color
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityFactorRadio(String label, String value) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey.shade200],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade500,
+            offset: Offset(5, 5),
+            blurRadius: 10,
+            spreadRadius: 1,
+          ),
+          BoxShadow(
+            color: Colors.white,
+            offset: Offset(-5, -5),
+            blurRadius: 10,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align text and radio
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black, // Text color remains constant
+              ),
+            ),
+          ),
+          Radio<String>(
+            value: value,
+            groupValue: _selectedActivityFactor,
+            onChanged: (String? newValue) {
+              setState(() => _selectedActivityFactor = newValue!);
+            },
+            activeColor: Colors.indigo.shade400, // Change only the radio button's color
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildNeumorphicAgeField() {
     return StatefulBuilder(
       builder: (context, setState) {
-        // Function to validate the age input
+        String errorMessage = ''; // Store the error message
+
+        // Function to validate the age input (between 1 and 120 and not empty)
         bool isValidInput(String value) {
+          if (value.isEmpty) {
+            errorMessage = 'Age cannot be empty!'; // Set error for empty input
+            return false;
+          }
+          // Check if the value starts with 0 (and is not 0 itself)
+          if (value.startsWith('0') && value != '0') {
+            errorMessage = 'Please enter a valid age! (no leading zeros)';
+            return false;
+          }
+
           final input = int.tryParse(value);
-          return input != null && input >= 1 && input <= 80;
+          if (input == null || input < 1 || input > 120) {
+            errorMessage = 'Please enter a valid age! (1-120)';
+            return false;
+          }
+
+          errorMessage = ''; // Clear error message if valid
+          return true;
         }
 
         bool isValid = isValidInput(_ageController.text);
 
-        return Container(
-          decoration: BoxDecoration(
-            gradient: isValid
-                ? LinearGradient(
-              colors: [Colors.greenAccent.shade200, Colors.greenAccent.shade400],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            )
-                : LinearGradient(
-              colors: [Colors.white, Colors.grey.shade200],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.shade500,
-                offset: Offset(5, 5),
-                blurRadius: 10,
-                spreadRadius: 1,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: isValid
+                    ? LinearGradient(
+                  colors: [Colors.indigo.shade200, Colors.indigo.shade400],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+                    : LinearGradient(
+                  colors: [Colors.white, Colors.grey.shade200],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade500,
+                    offset: Offset(5, 5),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                  BoxShadow(
+                    color: Colors.white,
+                    offset: Offset(-5, -5),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ],
               ),
-              BoxShadow(
-                color: Colors.white,
-                offset: Offset(-5, -5),
-                blurRadius: 10,
-                spreadRadius: 1,
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: TextField(
+                controller: _ageController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(3), // Allowing up to 3 digits (for age 120)
+                ],
+                decoration: InputDecoration(
+                  hintText: "eg. 18",
+                  hintStyle: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+                  border: InputBorder.none,
+                ),
+                style: TextStyle(
+                  color: isValid ? Colors.white : Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                onChanged: (value) {
+                  setState(() {}); // Trigger UI update for color change
+                  _age = double.tryParse(value);
+                },
               ),
-            ],
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: TextField(
-            controller: _ageController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(2), // Limit to 2 digits
-            ],
-            decoration: InputDecoration(
-              hintText: "eg. 18",
-              hintStyle: TextStyle(color: Colors.black),
-              border: InputBorder.none,
             ),
-            style: TextStyle(
-              color: isValid ? Colors.white : Colors.black,
-              fontWeight: FontWeight.w600,
-            ),
-            onChanged: (value) {
-              setState(() {}); // Trigger UI update for color change
-              _age = double.tryParse(value);
-            },
-          ),
+            // Error message displayed below the TextField, outside the container
+            if (!isValid) // Show error message if input is not valid
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  errorMessage,
+                  style: TextStyle(color: Colors.redAccent[400], fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+          ],
         );
       },
     );
   }
 
-  Widget _buildActivityFactorRadio(String label, String value) {
-    return GestureDetector(
-      onTap: () => setState(() => _selectedActivityFactor = value), // Set the selected activity factor
-      child: Container(
-        decoration: BoxDecoration(
-          // Gradient for a 3D look
-          gradient: (_selectedActivityFactor == value)
-              ? LinearGradient(
-            colors: [Colors.greenAccent.shade200, Colors.greenAccent.shade400],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          )
-              : LinearGradient(
-            colors: [Colors.white, Colors.grey.shade200],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            // Darker shadow for depth
-            BoxShadow(
-              color: Colors.grey.shade500,
-              offset: Offset(5, 5),
-              blurRadius: 10,
-              spreadRadius: 1,
+  Widget _buildNeumorphicTextField(TextEditingController controller, String hintText, bool isHeightField) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        String errorMessage = ''; // Variable to store the error message
+
+        // Function to validate the input value
+        bool isValidInput(String value) {
+          if (value.isEmpty) {
+            errorMessage = isHeightField
+                ? 'Height cannot be empty!'  // Custom message for height
+                : 'Weight cannot be empty!';  // Custom message for weight
+            return false;
+          }
+
+          // Regex to allow valid numbers with up to two decimal places but no leading zeroes unless it's '0'
+          final regex = RegExp(r'^(?!0\d)\d+(\.\d{1,2})?$'); // No leading zeros unless the value is '0'
+          final input = double.tryParse(value);
+          if (input == null || !regex.hasMatch(value)) {
+            errorMessage = 'Please enter a valid number with up to two decimal places and no leading zero.';
+            return false;
+          }
+          if (isHeightField) {
+            if (input < 20 || input > 200) {
+              errorMessage = 'Height should be between 20 and 200 cm.';
+              return false;
+            }
+          } else {
+            if (input < 10 || input > 200) {
+              errorMessage = 'Weight should be between 10 and 200 kg.';
+              return false;
+            }
+          }
+
+          errorMessage = ''; // Clear error message if input is valid
+          return true;
+        }
+
+        // Determine the current input validity
+        bool isValid = isValidInput(controller.text);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                // Applying gradient for a more 3D look
+                gradient: isValid
+                    ? LinearGradient(
+                  colors: [Colors.indigo.shade200, Colors.indigo.shade400],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+                    : LinearGradient(
+                  colors: [Colors.white, Colors.grey.shade200],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  // Darker shadow for a deeper 3D effect
+                  BoxShadow(
+                    color: Colors.grey.shade500,
+                    offset: Offset(5, 5),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                  BoxShadow(
+                    color: Colors.white,
+                    offset: Offset(-5, -5),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: TextField(
+                controller: controller,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')), // Limit to 2 decimal places
+                ],
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  hintStyle: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+                  border: InputBorder.none,
+                ),
+                style: TextStyle(
+                  color: isValid ? Colors.white : Colors.black, // Change text color based on validity
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                onChanged: (value) {
+                  setState(() {}); // Trigger UI update for color change
+                  if (isHeightField) {
+                    _height = double.tryParse(value);
+                  } else {
+                    _weight = double.tryParse(value);
+                  }
+                },
+              ),
             ),
-            BoxShadow(
-              color: Colors.white,
-              offset: Offset(-5, -5),
-              blurRadius: 10,
-              spreadRadius: 1,
-            ),
+            // Error message displayed below the TextField, outside the container
+            if (!isValid) // Show error message if input is not valid
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  errorMessage,
+                  style: TextStyle(color: Colors.redAccent[400], fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
           ],
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: (_selectedActivityFactor == value) ? Colors.white : Colors.black,
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Recipedia',
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.black,
+        iconTheme: IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            color: Colors.white,
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              if (mounted) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => const AuthStateChange()),
+                );
+              }
+            },
+          ),
+        ],
+      ),
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          BackgroundContainer(
-            child: GestureDetector(
-              onTap: () {
-                // Unfocus the text field and hide the keyboard when tapping outside
-                FocusScope.of(context).unfocus();
-              },
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 80), // Add some space from the top
-                          Center(
-                            child: Text(
-                              'Body Measurement',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-
-                          SizedBox(height: 50),
-                          // Sex Selection
-                          Text('Select your sex:', style: TextStyle(fontSize: 16, color: Colors.white)),
-                          SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(child: _buildNeumorphicRadio('Male', 'Male')),
-                              SizedBox(width: 20),
-                              Expanded(child: _buildNeumorphicRadio('Female', 'Female')),
-                            ],
-                          ),
-
-                          SizedBox(height: 40),
-                          // Age Input
-                          Text('Enter your age (1 to 80):', style: TextStyle(fontSize: 16, color: Colors.white)),
-                          SizedBox(height: 10),
-                          _buildNeumorphicAgeField(),
-
-
-                          SizedBox(height: 40),
-                          // Neumorphic Height Input
-                          Text('Enter your height (cm):', style: TextStyle(fontSize: 16, color: Colors.white)),
-                          SizedBox(height: 10),
-                          _buildNeumorphicTextField(_heightController, "eg. 170.50", true),
-
-                          SizedBox(height: 40),
-                          // Neumorphic Weight Input
-                          Text('Enter your weight (kg):', style: TextStyle(fontSize: 16, color: Colors.white)),
-                          SizedBox(height: 10),
-                          _buildNeumorphicTextField(_weightController, "eg. 60.55", false),
-
-                          SizedBox(height: 40),
-                          // Activity Factor Selection
-                          Text('Select your activity level:', style: TextStyle(fontSize: 16, color: Colors.white)),
-                          SizedBox(height: 20),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch, // Full-width alignment
-                            children: activityFactors.keys.map((key) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 20), // Space between buttons
-                                child: _buildActivityFactorRadio(key, key), // Reusing the function
-                              );
-                            }).toList(),
-                          ),
-
-
-                          SizedBox(height: 50),
-                          // Save and Proceed Button
-                          Align(
-                            alignment: Alignment.bottomRight,
-                            child: GestureDetector(
+          GestureDetector(
+            onTap: () {
+              // Unfocus the text field and hide the keyboard when tapping outside
+              FocusScope.of(context).unfocus();
+            },
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // "Skip" Button
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end, // Align 'Skip' text to the right
+                          children: [
+                            GestureDetector(
                               onTap: () {
-                                if (_selectedSex != null && _age != null && _height != null && _weight != null && _selectedActivityFactor != null) {
-                                  _saveUserData();
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Please fill all fields')),
-                                  );
-                                }
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const UserHomePage()),
+                                );
                               },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Colors.greenAccent.shade200, Colors.greenAccent.shade400],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.shade500,
-                                      offset: Offset(5, 5),
-                                      blurRadius: 10,
-                                      spreadRadius: 1,
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.white,
-                                      offset: Offset(-5, -5),
-                                      blurRadius: 10,
-                                      spreadRadius: 1,
-                                    ),
-                                  ],
+                              child: Text(
+                                'Skip',
+                                style: TextStyle(
+                                  color: Colors.indigo,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  decoration:  TextDecoration.underline,
+                                  decorationStyle: TextDecorationStyle.solid, // Solid underline
+                                  decorationColor: Colors.indigo, // Indigo color for the underline
+                                  decorationThickness: 2.0,
                                 ),
-                                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                                child: Text(
-                                  'Save & Proceed',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: 40),
+                        Center(
+                          child: Text(
+                            'Personal Information',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: 40),
+                        // Sex Selection
+                        Text('Select your sex:', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space evenly between items
+                          children: [
+                            Expanded(child: _buildNeumorphicRadio('Male', 'Male')),
+                            SizedBox(width: 20), // Space between the two options
+                            Expanded(child: _buildNeumorphicRadio('Female', 'Female')),
+                          ],
+                        ),
+
+
+                        SizedBox(height: 40),
+                        // Age Input
+                        Text('Enter your age (1 to 120):', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
+                        SizedBox(height: 10),
+                        _buildNeumorphicAgeField(),
+
+                        SizedBox(height: 40),
+                        // Neumorphic Height Input
+                        Text('Enter your height (cm):', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
+                        SizedBox(height: 10),
+                        _buildNeumorphicTextField(_heightController, "eg. 170.50", true),
+
+                        SizedBox(height: 40),
+                        // Neumorphic Weight Input
+                        Text('Enter your weight (kg):', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
+                        SizedBox(height: 10),
+                        _buildNeumorphicTextField(_weightController, "eg. 60.55", false),
+
+                        SizedBox(height: 40),
+                        // Activity Factor Selection
+                        Text('Select your activity level:', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
+                        SizedBox(height: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch, // Align items to take full width
+                          children: activityFactors.keys.map((key) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 20.0), // Space between buttons
+                              child: _buildActivityFactorRadio(key, key), // Pass label and value
+                            );
+                          }).toList(),
+                        ),
+
+                        SizedBox(height: 40),
+                        // Save and Proceed Button
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: GestureDetector(
+                            onTap: () {
+                              _saveUserData();
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Colors.indigo.shade200, Colors.indigo.shade400],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.shade500,
+                                    offset: Offset(5, 5),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
                                   ),
+                                  BoxShadow(
+                                    color: Colors.white,
+                                    offset: Offset(-5, -5),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                              child: Text(
+                                'Save & Proceed',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 20,
                                 ),
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-
-          // Positioned "Skip" Button
-          Positioned(
-            top: 50,
-            right: 20,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const UserHomePage()),
-                );
-              },
-              child: Text('Skip', style: TextStyle(color: Colors.greenAccent[400], fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ],
             ),
           ),
         ],
