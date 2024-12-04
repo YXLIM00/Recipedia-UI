@@ -54,12 +54,27 @@ class UserChangeInfoPage3State extends State<UserChangeInfoPage3> {
   // Function to save data to Firestore
   Future<void> _saveDietData() async {
     if (_selectedRadioValue.isEmpty) {
-      // Show an error message if the diet purpose is not filled
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
+      // Show an AlertDialog if the diet purpose is not filled
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Missing Value'),
+            content: const Text('Please fill the missing field(s): Diet Purpose'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: const Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
+              ),
+            ],
+          );
+        },
       );
       return; // Exit early to prevent further execution
     }
+
 
     final User? user = _auth.currentUser;
     if (user != null) {
@@ -73,6 +88,27 @@ class UserChangeInfoPage3State extends State<UserChangeInfoPage3> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const UserProfilePage()),
+        );
+
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Successful!'),
+              content: const Text(
+                "Dietary Information Updated ✅",
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: const Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
+                ),
+              ],
+            );
+          },
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -270,45 +306,51 @@ class UserChangeInfoPage3State extends State<UserChangeInfoPage3> {
 
                 const SizedBox(height: 50),
                 // Buttons Row
-                GestureDetector(
-                  onTap: () {
-                    _saveDietData();
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      // Gradient for the 3D look
-                      gradient: LinearGradient(
-                        colors: [Colors.indigo.shade200, Colors.indigo.shade400],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        // Adding shadows for a deeper 3D effect
-                        BoxShadow(
-                          color: Colors.grey.shade500,
-                          offset: Offset(5, 5),
-                          blurRadius: 10,
-                          spreadRadius: 1,
+                Column(
+                  children: [
+                    Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          _saveDietData();
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            // Gradient for the 3D look
+                            gradient: LinearGradient(
+                              colors: [Colors.indigo.shade200, Colors.indigo.shade400],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              // Adding shadows for a deeper 3D effect
+                              BoxShadow(
+                                color: Colors.grey.shade500,
+                                offset: Offset(5, 5),
+                                blurRadius: 10,
+                                spreadRadius: 1,
+                              ),
+                              BoxShadow(
+                                color: Colors.white,
+                                offset: Offset(-5, -5),
+                                blurRadius: 10,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                          child: Text(
+                            'Update',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 20,
+                            ),
+                          ),
                         ),
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: Offset(-5, -5),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                    child: Text(
-                      'Update',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 20,
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),

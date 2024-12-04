@@ -91,7 +91,7 @@ class UserDietaryRecommendation {
           "Fried Food \n(generally fast food)",
           "Processed Meats \n(ham, bacon, sausage, lunch meat)",
           "Sugary Beverages and Snacks \n(including fruit juice)",
-          "Any Sweetened Products"
+          "Sweetened Products"
         ]);
         customHelpfulFood.addAll([
           "Whole Grains \n(wheat bread, brown rice, wheat pasta, oats)",
@@ -115,7 +115,7 @@ class UserDietaryRecommendation {
           "Processed Meats \n(ham, bacon, sausage, lunch meat)",
           "Saturated Oil \n(palm oil, coconut oil, butter, margarine)",
           "Sugary Beverages and Snacks \n(including fruit juice)",
-          "Any Sweetened Products",
+          "Sweetened Products",
           "Caffeine"
         ]);
         customHelpfulFood.addAll([
@@ -130,7 +130,7 @@ class UserDietaryRecommendation {
         customHarmfulFood.addAll([
           "Refined Carbs \n(white bread, white rice, pasta made of flour, breakfast cereals)",
           "Sugary Beverages and Snacks \n(including fruit juice)",
-          "Any Sweetened Products",
+          "Sweetened Products",
           "Caffeine"
         ]);
         customHelpfulFood.addAll([
@@ -140,7 +140,7 @@ class UserDietaryRecommendation {
         ]);
         customCautions.addAll([
           "Eat small meals/snacks every 3 hours.",
-          "Avoid large meals to prevent sudden drop of blood pressure due to sudden spike of blood glucose.",
+          "Avoid large meals to prevent sudden drop of blood pressure.",
           "Avoid sudden standing up or sudden postural change.",
           "Avoid standing still for a long period of time."
         ]);
@@ -175,7 +175,7 @@ class UserDietaryRecommendation {
           "Fried Food \n(generally fast food)",
           "Processed Meats \n(ham, bacon, sausage, lunch meat)",
           "Sugary Beverages and Snacks \n(including fruit juice)",
-          "Any Sweetened Products"
+          "Sweetened Products"
         ]);
         customHelpfulFood.addAll([
           "Whole Grains \n(wheat bread, brown rice, wheat pasta, oats)",

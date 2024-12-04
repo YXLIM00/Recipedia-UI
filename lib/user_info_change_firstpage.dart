@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/user_home_page.dart';
 import 'package:fyp_recipe/user_profile_page.dart';
 
 class UserChangeInfoPage1 extends StatefulWidget {
@@ -86,6 +85,27 @@ class UserChangeInfoPage1State extends State<UserChangeInfoPage1> {
           context,
           MaterialPageRoute(builder: (context) => UserProfilePage()),
         );
+
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Successful!'),
+              content: const Text(
+                "Personal Information Updated ✅",
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: const Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
+                ),
+              ],
+            );
+          },
+        );
       }
     } catch (e) {
       // Handle any errors during the save operation
@@ -113,7 +133,7 @@ class UserChangeInfoPage1State extends State<UserChangeInfoPage1> {
             onPressed: () {
               Navigator.of(context).pop(); // Close the dialog
             },
-            child: Text('OK', style: TextStyle(color: Colors.indigo, fontSize: 16, fontWeight: FontWeight.bold),),
+            child: Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
           ),
         ],
       ),
@@ -487,7 +507,7 @@ class UserChangeInfoPage1State extends State<UserChangeInfoPage1> {
                               onTap: () {
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const UserHomePage()),
+                                  MaterialPageRoute(builder: (context) => const UserProfilePage()),
                                 );
                               },
                               child: Text(
@@ -567,45 +587,49 @@ class UserChangeInfoPage1State extends State<UserChangeInfoPage1> {
 
                         SizedBox(height: 40),
                         // Save and Proceed Button
-                        Center(
-                          child: GestureDetector(
-                            onTap: () {
-                              _saveUserData();
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [Colors.indigo.shade200, Colors.indigo.shade400],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.shade500,
-                                    offset: Offset(5, 5),
-                                    blurRadius: 10,
-                                    spreadRadius: 1,
+                        Column(
+                          children: [
+                            Center(
+                              child: GestureDetector(
+                                onTap: () {
+                                  _saveUserData();
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [Colors.indigo.shade200, Colors.indigo.shade400],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.shade500,
+                                        offset: Offset(5, 5),
+                                        blurRadius: 10,
+                                        spreadRadius: 1,
+                                      ),
+                                      BoxShadow(
+                                        color: Colors.white,
+                                        offset: Offset(-5, -5),
+                                        blurRadius: 10,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
                                   ),
-                                  BoxShadow(
-                                    color: Colors.white,
-                                    offset: Offset(-5, -5),
-                                    blurRadius: 10,
-                                    spreadRadius: 1,
+                                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                                  child: Text(
+                                    'Update',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 20,
+                                    ),
                                   ),
-                                ],
-                              ),
-                              padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                              child: Text(
-                                'Update',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 20,
                                 ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       ],
                     ),

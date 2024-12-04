@@ -54,9 +54,23 @@ class UserInfoPage3State extends State<UserInfoPage3> {
   // Function to save data to Firestore
   Future<void> _saveDietData() async {
     if (_selectedRadioValue.isEmpty) {
-      // Show an error message if the diet purpose is not filled
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
+      // Show an AlertDialog if the diet purpose is not filled
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Missing Value'),
+            content: const Text('Please fill the missing field(s): Diet Purpose'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
       );
       return; // Exit early to prevent further execution
     }

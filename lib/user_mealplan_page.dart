@@ -233,21 +233,35 @@ class UserMealplanPageState extends State<UserMealplanPage> {
           },
           'totalCalories': totalCalories,
         });
-        // Show a success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Meal Plan saved successfully!")),
+        // Show a success message in an AlertDialog
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Successful!'),
+              content: const Text(
+                "Meal Plan saved ✅",
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: const Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
+                ),
+              ],
+            );
+          },
         );
+
       } catch (e) {
         // Show an error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error saving meal plan: $e")),
-        );
+        print(e);
       }
     } else {
       // Show a message if the user is not logged in
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("User not logged in!")),
-      );
+      print("User not logged in!");
     }
   }
 
@@ -286,7 +300,7 @@ class UserMealplanPageState extends State<UserMealplanPage> {
             Center(
               child: Text(
                 'Meal Plan',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.indigo[400]),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.indigo),
               ),
             ),
 
@@ -370,21 +384,50 @@ class UserMealplanPageState extends State<UserMealplanPage> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton(
-            onPressed: saveMealPlan,
-            style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+          Center(
+            child: GestureDetector(
+              onTap: () {
+                saveMealPlan();
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  // Gradient for the 3D look
+                  gradient: LinearGradient(
+                    colors: [Colors.indigo.shade200, Colors.indigo.shade400],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    // Adding shadows for a deeper 3D effect
+                    BoxShadow(
+                      color: Colors.grey.shade500,
+                      offset: Offset(5, 5),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                    BoxShadow(
+                      color: Colors.white,
+                      offset: Offset(-5, -5),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                child: Text(
+                  'Update',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                  ),
+                ),
               ),
             ),
-            child: const Text(
-              "Save Meal Plan",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
           ),
-          const SizedBox(height: 10),
-          const UserBottomNavBar(currentIndex: 3),
+          SizedBox(height: 20.0),
+          UserBottomNavBar(currentIndex: 3),
         ],
       ),
     );

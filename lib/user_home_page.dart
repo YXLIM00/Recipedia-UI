@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fyp_recipe/auth_state_change.dart';
 import 'package:fyp_recipe/user_bottom_nav_bar.dart';
 import 'package:fyp_recipe/user_dietary_recommendation.dart';
-import 'package:fyp_recipe/user_search_page.dart';
+import 'package:fyp_recipe/user_recommended_recipes_page.dart';
 
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
@@ -135,10 +135,9 @@ class _UserHomePageState extends State<UserHomePage> {
             Center(
               child: Text(
                 'Dietary Recommendation',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.indigo[400]),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.indigo),
               ),
             ),
-
 
 
             // Daily Calories Intake Section
@@ -186,11 +185,11 @@ class _UserHomePageState extends State<UserHomePage> {
                       // Displaying "BMI", "Status", and "Calories" on the same line
                       Row(
                         children: [
-                          Expanded(child: Text("BMI", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16), textAlign: TextAlign.center,)),
+                          Expanded(child: Text("BMI", style: TextStyle(fontSize: 16), textAlign: TextAlign.center,)),
                           SizedBox(width: 5),
-                          Expanded(child: Text("Status", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16), textAlign: TextAlign.center,)),
+                          Expanded(child: Text("Status", style: TextStyle(fontSize: 16), textAlign: TextAlign.center,)),
                           SizedBox(width: 5),
-                          Expanded(child: Text("Calories", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16), textAlign: TextAlign.center,)),
+                          Expanded(child: Text("Calories", style: TextStyle(fontSize: 16), textAlign: TextAlign.center,)),
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -198,11 +197,11 @@ class _UserHomePageState extends State<UserHomePage> {
                       // Displaying the values of 'current_bmi', 'current_bmi_status', and 'recommended_calories_intake'
                       Row(
                         children: [
-                          Expanded(child: Text(userData?['current_bmi']?.toStringAsFixed(2) ?? '', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16), textAlign: TextAlign.center,)),
+                          Expanded(child: Text(userData?['current_bmi']?.toStringAsFixed(2) ?? '', style: TextStyle(fontSize: 16), textAlign: TextAlign.center,)),
                           SizedBox(width: 5),
-                          Expanded(child: Text(userData?['current_bmi_status'] ?? '', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16), textAlign: TextAlign.center,)),
+                          Expanded(child: Text(userData?['current_bmi_status'] ?? '', style: TextStyle(fontSize: 16), textAlign: TextAlign.center,)),
                           SizedBox(width: 5),
-                          Expanded(child: Text(userData?['recommended_calories_intake']?.toStringAsFixed(2) ?? '', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16), textAlign: TextAlign.center,)),
+                          Expanded(child: Text(userData?['recommended_calories_intake']?.toStringAsFixed(2) ?? '', style: TextStyle(fontSize: 16), textAlign: TextAlign.center,)),
                         ],
                       ),
                     ],
@@ -265,7 +264,6 @@ class _UserHomePageState extends State<UserHomePage> {
                               "- $label",
                               style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
                             ),
@@ -337,7 +335,6 @@ class _UserHomePageState extends State<UserHomePage> {
                               "- $label",
                               style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
                             ),
@@ -409,7 +406,6 @@ class _UserHomePageState extends State<UserHomePage> {
                               "- $label",
                               style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
                             ),
@@ -481,7 +477,6 @@ class _UserHomePageState extends State<UserHomePage> {
                               "- $label",
                               style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
                             ),
@@ -553,7 +548,6 @@ class _UserHomePageState extends State<UserHomePage> {
                               "- $label",
                               style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
                             ),
@@ -578,7 +572,7 @@ class _UserHomePageState extends State<UserHomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const UserSearchPage()),
+                  MaterialPageRoute(builder: (context) => const UserRecommendedRecipesPage()),
                 );
               },
             ),

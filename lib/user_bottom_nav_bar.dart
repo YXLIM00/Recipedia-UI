@@ -21,10 +21,10 @@ class UserBottomNavBar extends StatelessWidget {
         page = const UserSearchPage();
         break;
       case 2:
-        page = const UserMealplanPage();
+        page = const UserFavouritePage();
         break;
       case 3:
-        page = const UserFavouritePage();
+        page = const UserMealplanPage();
         break;
       case 4:
         page = const UserProfilePage();
@@ -42,11 +42,12 @@ class UserBottomNavBar extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: (index) => _onItemTapped(context, index),
-
       backgroundColor: Colors.black,
-      selectedItemColor: Colors.greenAccent[400],
+      selectedItemColor: Colors.indigo,
       unselectedItemColor: Colors.black,
-      items: const [
+      selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),  // Bold text for selected label
+      unselectedLabelStyle: TextStyle(fontWeight: FontWeight.bold), // Bold text for unselected label
+      items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Home',
@@ -56,12 +57,12 @@ class UserBottomNavBar extends StatelessWidget {
           label: 'Search',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today),
-          label: 'Meal Plan',
-        ),
-        BottomNavigationBarItem(
           icon: Icon(Icons.favorite),
           label: 'Favourites',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.calendar_today),
+          label: 'Meal Plan',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
