@@ -89,14 +89,17 @@ class AdminEditRecipeState extends State<AdminEditRecipe> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Recipes', style: TextStyle(color: Colors.greenAccent[400])),
+        title: Text(
+          'Edit Recipes',
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.greenAccent[400]),
+        iconTheme: IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            color: Colors.greenAccent[400],
+            color: Colors.white,
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               if (mounted) {
@@ -109,27 +112,25 @@ class AdminEditRecipeState extends State<AdminEditRecipe> {
           ),
         ],
       ),
-      body: BackgroundContainer(
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : recipes.isEmpty
-            ? const Center(child: Text('No recipes found', style: TextStyle(color: Colors.white)))
-            : GridView.builder(
-          padding: const EdgeInsets.all(8.0),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 0.8,
-          ),
-          itemCount: recipes.length,
-          itemBuilder: (context, index) {
-            return RecipeCard(
-              recipe: recipes[index],
-              updateImage: () => updateRecipeImage(recipes[index]),
-            );
-          },
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : recipes.isEmpty
+          ? const Center(child: Text('No recipes found', style: TextStyle(color: Colors.white)))
+          : GridView.builder(
+        padding: const EdgeInsets.all(8.0),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 0.7,
         ),
+        itemCount: recipes.length,
+        itemBuilder: (context, index) {
+          return RecipeCard(
+            recipe: recipes[index],
+            updateImage: () => updateRecipeImage(recipes[index]),
+          );
+        },
       ),
     );
   }
@@ -147,7 +148,7 @@ class RecipeCard extends StatelessWidget {
     final String imageUrl = recipe['image'] ?? '';
 
     return Card(
-      color: Colors.grey[850],
+      color: Colors.black,
       margin: const EdgeInsets.all(10),
       child: Container(
         padding: const EdgeInsets.all(8.0),
@@ -160,7 +161,7 @@ class RecipeCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
                 label,
-                maxLines: 2,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
               ),
@@ -193,7 +194,7 @@ class RecipeCard extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -207,7 +208,7 @@ class RecipeCard extends StatelessWidget {
                   );
                 },
 
-                child: Text('Edit Recipe', style: TextStyle(color: Colors.greenAccent[400])),
+                child: Text('Edit Recipe', style: TextStyle(color: Colors.indigo, fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

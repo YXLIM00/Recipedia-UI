@@ -86,23 +86,23 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              backgroundColor: Colors.grey[900],
+              backgroundColor: Colors.white,
               title: Text(
                 'Filter Recipes',
-                style: TextStyle(color: Colors.greenAccent[400], fontWeight: FontWeight.bold, fontSize: 24),
+                style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold, fontSize: 26),
               ),
               content: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Diet Filter Checkboxes
-                    Text('Diet Preferences:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+                    Text('Diet Labels:', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
                     Column(
                       children: availableDiets.map((diet) {
                         return CheckboxListTile(
-                          activeColor: Colors.greenAccent[400],
-                          checkColor: Colors.black,
-                          title: Text(diet, style: TextStyle(color: Colors.white)),
+                          activeColor: Colors.indigo,
+                          checkColor: Colors.white,
+                          title: Text(diet, style: TextStyle(color: Colors.black)),
                           value: selectedDiets.contains(diet),
                           onChanged: (bool? value) {
                             setState(() {
@@ -118,13 +118,13 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
                     ),
                     const SizedBox(height: 20),
                     // Health Filter Checkboxes
-                    Text('Allergies & Preferences:', style: TextStyle(color: Colors.white, fontWeight:  FontWeight.bold, fontSize: 20)),
+                    Text('Allergies:', style: TextStyle(color: Colors.black, fontWeight:  FontWeight.bold, fontSize: 20)),
                     Column(
                       children: availableHealthLabels.map((label) {
                         return CheckboxListTile(
-                          activeColor: Colors.greenAccent[400],
-                          checkColor: Colors.black,
-                          title: Text(label, style: TextStyle(color: Colors.white)),
+                          activeColor: Colors.indigo,
+                          checkColor: Colors.white,
+                          title: Text(label, style: TextStyle(color: Colors.black)),
                           value: selectedHealthLabels.contains(label),
                           onChanged: (bool? value) {
                             setState(() {
@@ -148,7 +148,7 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
                     setState(() => isLoading = true);
                     getRecipes();
                   },
-                  child: Text('Apply', style: TextStyle(color: Colors.greenAccent[400])),
+                  child: Text('Apply', style: TextStyle(color: Colors.indigo)),
                 ),
               ],
             );
@@ -163,92 +163,92 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Add Recipes',
-          style: TextStyle(color: Colors.greenAccent[400]),
+          'Recipedia',
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.greenAccent[400]),
+        iconTheme: IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            color: Colors.greenAccent[400],
+            color: Colors.white,
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               if (mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
+                Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (context) => const AuthStateChange()),
-                      (Route<dynamic> route) => false,
                 );
               }
             },
           ),
         ],
       ),
-      body: BackgroundContainer(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      style: TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Search for recipes',
-                        hintStyle: TextStyle(color: Colors.white70),
-                        prefixIcon: Icon(Icons.search, color: Colors.white70),
-                        filled: true,
-                        fillColor: Colors.grey[800],
-                        contentPadding: EdgeInsets.symmetric(vertical: 15),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
+      body: Column(
+        children: [
+          // Search and Filter
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    decoration: InputDecoration(
+                      hintText: 'Search for recipes',
+                      hintStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                      prefixIcon: Icon(Icons.search, color: Colors.white, size: 20,),
+                      filled: true,
+                      fillColor: Colors.grey,
+                      contentPadding: EdgeInsets.symmetric(vertical: 15),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
                       ),
-                      onSubmitted: (value) {
-                        setState(() {
-                          searchQuery = value;
-                          isLoading = true;
-                        });
-                        getRecipes();
-                      },
                     ),
+                    onSubmitted: (value) {
+                      setState(() {
+                        searchQuery = value;
+                        isLoading = true;
+                      });
+                      getRecipes();
+                    },
                   ),
-                  IconButton(
-                    icon: Icon(Icons.filter_list, color: Colors.greenAccent[400]),
-                    onPressed: openFilterDialog,
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : recipes.isEmpty
-                  ? const Center(
-                child: Text(
-                  'No recipes found',
-                  style: TextStyle(color: Colors.white),
                 ),
-              )
-                  : GridView.builder(
-                padding: const EdgeInsets.all(8.0),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, // Two recipes per row
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 0.8,
+                IconButton(
+                  icon: Icon(Icons.filter_alt_sharp, color: Colors.indigo, size: 26,),
+                  onPressed: openFilterDialog,
                 ),
-                itemCount: recipes.length,
-                itemBuilder: (context, index) {
-                  return RecipeCard(recipe: recipes[index]);
-                },
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          // Display recipes
+          Expanded(
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : recipes.isEmpty
+                ? const Center(
+              child: Text(
+                'No recipes found',
+                style: TextStyle(color: Colors.black),
+              ),
+            )
+                : GridView.builder(
+              padding: const EdgeInsets.all(8.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // Two recipes per row
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 0.7,
+              ),
+              itemCount: recipes.length,
+              itemBuilder: (context, index) {
+                return RecipeCard(recipe: recipes[index]);
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -265,10 +265,10 @@ class RecipeCard extends StatelessWidget {
     final String imageUrl = recipe['image'] ?? '';
 
     return Card(
-      color: Colors.grey[850],
+      color: Colors.black,
       margin: const EdgeInsets.all(10),
       child: Container(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -277,7 +277,7 @@ class RecipeCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 label,
-                maxLines: 2,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: Colors.white,
@@ -307,12 +307,12 @@ class RecipeCard extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: Text('Add Recipe', style: TextStyle(color: Colors.greenAccent[400], fontWeight: FontWeight.bold),),
+                child: Text('Add Recipe', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(

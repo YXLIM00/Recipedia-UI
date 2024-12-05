@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/background_image_container.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AddRecipeDetailsPage extends StatefulWidget {
@@ -15,6 +14,12 @@ class AddRecipeDetailsPage extends StatefulWidget {
 }
 
 class _AddRecipeDetailsPageState extends State<AddRecipeDetailsPage> {
+  bool isNutritionExpanded = false;
+  bool isDietLabelsExpanded = false;
+  bool isCautionsExpanded = false;
+  bool isIngredientsExpanded = false;
+  bool isRecipeUrlExpanded = false;
+
   Future<void> addRecipeToFirestore() async {
     final String label = widget.recipe['label'] ?? 'Unnamed Recipe';
     final String image = widget.recipe['image'] ?? '';
@@ -61,14 +66,13 @@ class _AddRecipeDetailsPageState extends State<AddRecipeDetailsPage> {
       });
     }
 
-
     try {
       await FirebaseFirestore.instance.collection('recipes').doc(label).set({
         'label': label,
         'image': image,
         'yield': servings,
         'calories': double.parse(calories!.toStringAsFixed(1)),
-        'caloriesPerServing': servings > 0 ? double.parse((calories / servings).toStringAsFixed(1)): 'N/A',
+        'caloriesPerServing': servings > 0 ? double.parse((calories / servings).toStringAsFixed(1)) : 'N/A',
         'totalNutrients': formattedTotalNutrients,
         'totalDaily': formattedTotalDaily,
         'dietLabels': dietLabels,
@@ -79,16 +83,32 @@ class _AddRecipeDetailsPageState extends State<AddRecipeDetailsPage> {
         'source': source,
         'url': url,
         'totalTime': totalTime,
-
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Recipe added to Firestore successfully')),
-      );
+
+      _showDialog(context, 'Success', 'Recipe added successfully');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to add recipe: $e')),
-      );
+      _showDialog(context, 'Error', 'Failed to add recipe: $e');
     }
+  }
+
+  void _showDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title, style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),),
+          content: Text(message, style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK', style: TextStyle(color: Colors.indigo, fontSize: 16, fontWeight: FontWeight.bold),),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -109,19 +129,19 @@ class _AddRecipeDetailsPageState extends State<AddRecipeDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Recipedia',
-          style: TextStyle(color: Colors.greenAccent[400]),
+          'Add Recipes',
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.greenAccent[400]),
+        iconTheme: IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            color: Colors.greenAccent[400],
+            color: Colors.white,
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              if (mounted) { // Ensure the widget is still in the tree before navigating
+              if (mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const AuthStateChange()),
                       (Route<dynamic> route) => false,
@@ -131,102 +151,84 @@ class _AddRecipeDetailsPageState extends State<AddRecipeDetailsPage> {
           ),
         ],
       ),
-      body: BackgroundContainer(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              const SizedBox(height: 20),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: image.isNotEmpty
-                    ? Image.network(image, height: 250, width: double.infinity, fit: BoxFit.cover)
-                    : const Icon(Icons.broken_image, size: 100),
-              ),
-              const SizedBox(height: 30),
-
-              // Nutrition Facts Section
-              const SizedBox(height: 30),
-              const Text('Nutrition Facts:', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-              _buildNutritionalCard('Servings', '$servings servings'),
-              _buildNutritionalCard('Calories', '${calories?.toStringAsFixed(0) ?? 'N/A'} kcal'),
-              _buildNutritionalCard('Calories per Serving', caloriesPerServing),
-              _buildNutritionalCard('Protein', '$protein g'),
-              _buildNutritionalCard('Fat', '$fat g'),
-              _buildNutritionalCard('Carbohydrates', '$carbs g'),
-
-              // Diet Labels Section
-              const SizedBox(height: 30),
-              _buildTagsSection('Diet Labels', dietLabels),
-
-              // Cautions Section
-              const SizedBox(height: 30),
-              _buildTagsSection('Cautions', cautions),
-
-              // Ingredients Section
-              const SizedBox(height: 30),
-              const Text('Ingredients:', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-              ...ingredientLines.map((ingredient) => _buildIngredientCard(ingredient)),
-
-              // Recipe URL Section
-              const SizedBox(height: 30),
-              const Text(
-                'Cooking Instructions:',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              _buildRecipeUrl(url),
-
-              // Add to Firestore Button
-              const SizedBox(height: 30),
-              Align(
-                alignment: Alignment.center,
-                child: ElevatedButton(
-                  onPressed: addRecipeToFirestore,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0), // Increase padding
-                    minimumSize: const Size(150, 50), // Set minimum width and height
-                  ),
-                  child: Text(
-                    'Add Recipe',
-                    style: TextStyle(
-                      fontSize: 20, // Increase text size
-                      color: Colors.greenAccent[400],
-                      fontWeight: FontWeight.bold, // Optional: make the text bold
-                    ),
-                  ),
-                ),
-              )
-
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNutritionalCard(String title, String value) {
-    return Card(
-      color: Colors.grey[800],
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              label,
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black),
             ),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 16, color: Colors.white),
+            const SizedBox(height: 20),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: image.isNotEmpty
+                  ? Image.network(image, height: 250, width: double.infinity, fit: BoxFit.cover)
+                  : const Icon(Icons.broken_image, size: 100),
+            ),
+            const SizedBox(height: 40),
+
+            // Nutrition Facts Section
+            _buildExpandableSection('Nutrition Facts', isNutritionExpanded, () {
+              setState(() {
+                isNutritionExpanded = !isNutritionExpanded;
+              });
+            }, Column(
+              children: [
+                _buildNutritionalCard('Servings', '$servings servings'),
+                _buildNutritionalCard('Calories', '${calories?.toStringAsFixed(0) ?? 'N/A'} kcal'),
+                _buildNutritionalCard('Calories per Serving', caloriesPerServing),
+                _buildNutritionalCard('Protein', '$protein g'),
+                _buildNutritionalCard('Fat', '$fat g'),
+                _buildNutritionalCard('Carbohydrates', '$carbs g'),
+              ],
+            )),
+
+            // Diet Labels Section
+            _buildExpandableSection('Diet Labels', isDietLabelsExpanded, () {
+              setState(() {
+                isDietLabelsExpanded = !isDietLabelsExpanded;
+              });
+            }, _buildTagsSection(dietLabels)),
+
+            // Cautions Section
+            _buildExpandableSection('Cautions', isCautionsExpanded, () {
+              setState(() {
+                isCautionsExpanded = !isCautionsExpanded;
+              });
+            }, _buildTagsSection(cautions)),
+
+            // Ingredients Section
+            _buildExpandableSection('Ingredients', isIngredientsExpanded, () {
+              setState(() {
+                isIngredientsExpanded = !isIngredientsExpanded;
+              });
+            }, Column(
+              children: ingredientLines.map((ingredient) => _buildIngredientCard(ingredient)).toList(),
+            )),
+
+            // Recipe URL Section
+            _buildExpandableSection('Cooking Instructions', isRecipeUrlExpanded, () {
+              setState(() {
+                isRecipeUrlExpanded = !isRecipeUrlExpanded;
+              });
+            }, _buildRecipeUrl(url)),
+
+            // Add to Firestore Button
+            const SizedBox(height: 30),
+            Align(
+              alignment: Alignment.center,
+              child: ElevatedButton(
+                onPressed: addRecipeToFirestore,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+                  minimumSize: const Size(150, 50),
+                ),
+                child: const Text('Add Recipe', style: TextStyle(color: Colors.indigo, fontSize: 16)),
+              ),
             ),
           ],
         ),
@@ -234,94 +236,69 @@ class _AddRecipeDetailsPageState extends State<AddRecipeDetailsPage> {
     );
   }
 
-
-  Widget _buildTagsSection(String title, List<String> tags) {
-    if (tags.isEmpty) return const SizedBox();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle(title),
-        Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          children: tags.map((tag) => Chip(label: Text(tag, style: const TextStyle(color: Colors.white)), backgroundColor: Colors.grey[800])).toList(),
-        ),
-      ],
+  Widget _buildExpandableSection(String title, bool isExpanded, VoidCallback onPressed, Widget content) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      color: Colors.black,
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(title, style: const TextStyle(fontSize: 20, color: Colors.white)),
+            trailing: IconButton(
+              icon: Icon(
+                isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                color: Colors.indigo,
+              ),
+              onPressed: onPressed,
+            ),
+          ),
+          if (isExpanded) content,
+        ],
+      ),
     );
   }
 
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      '$title:',
-      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+  Widget _buildNutritionalCard(String title, String value) {
+    return ListTile(
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      trailing: Text(value, style: const TextStyle(color: Colors.white)),
     );
   }
 
+  Widget _buildTagsSection(List<String> tags) {
+    return Wrap(
+      spacing: 8.0,
+      children: tags.map((tag) => Chip(label: Text(tag, style: const TextStyle(color: Colors.black)))).toList(),
+    );
+  }
 
   Widget _buildIngredientCard(String ingredient) {
     return Card(
-      color: Colors.grey[800],
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Text(
-          ingredient,
-          style: const TextStyle(fontSize: 16, color: Colors.white),
-          textAlign: TextAlign.left,
-        ),
+      color: Colors.black,
+      margin: const EdgeInsets.symmetric(vertical: 5.0),
+      child: ListTile(
+        title: Text(ingredient, style: const TextStyle(color: Colors.white)),
       ),
     );
   }
 
-
   Widget _buildRecipeUrl(String url) {
-    if (url.isEmpty) {
-      return Card(
-        color: Colors.grey[800],
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Text(
-            'No URL available',
-            style: TextStyle(color: Colors.red),
-          ),
-        ),
-      );
-    }
-
-    // Make sure the URL is trimmed and properly parsed as a Uri
-    final Uri uri = Uri.parse(url.trim());
-
-    return Card(
-      color: Colors.grey[800],
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: GestureDetector(
-          onTap: () async {
-            try {
-              if (uri.scheme != 'http' && uri.scheme != 'https') {
-                throw 'Invalid URL scheme: $url';
-              }
-
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
-              } else {
-                throw 'Could not launch $url';
-              }
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: $e')),
-              );
-            }
-          },
-
-          child: Text(
-            url,
-            style: const TextStyle(color: Colors.blue),
-          ),
+    return url.isNotEmpty
+        ? GestureDetector(
+      onTap: () async {
+        if (await canLaunch(url)) {
+          await launch(url);
+        }
+      },
+      child: Card(
+        color: Colors.black,
+        margin: const EdgeInsets.symmetric(vertical: 5.0),
+        child: ListTile(
+          title: Text('Click to view full recipe', style: const TextStyle(color: Colors.white)),
         ),
       ),
-    );
+    )
+        : const SizedBox();
   }
 }

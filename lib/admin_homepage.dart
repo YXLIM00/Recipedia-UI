@@ -4,7 +4,6 @@ import 'package:fyp_recipe/admin_add_recipe.dart';
 import 'package:fyp_recipe/admin_delete_recipe.dart';
 import 'package:fyp_recipe/admin_edit_recipe.dart';
 import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/background_image_container.dart';
 
 class AdminHomePage extends StatefulWidget {
   const AdminHomePage({super.key});
@@ -22,15 +21,15 @@ class _AdminHomePageState extends State<AdminHomePage> {
       appBar: AppBar(
         title: Text(
           'Recipedia',
-          style: TextStyle(color: Colors.greenAccent[400]),
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.greenAccent[400]),
+        iconTheme: IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            color: Colors.greenAccent[400],
+            color: Colors.white,
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               if (mounted) { // Ensure the widget is still in the tree before navigating
@@ -43,101 +42,104 @@ class _AdminHomePageState extends State<AdminHomePage> {
           ),
         ],
       ),
-      body: BackgroundContainer(
-        child: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Hello ${admin.email!}, proceed to:',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Hello! ${admin.email!}, \nproceed to:',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 20,
+                ),
+              ),
+
+
+              const SizedBox(height: 20), // Spacing between text and buttons
+              // Add Recipes Button
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 46, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), // Rounded edges
+                  ),
+                  elevation: 10, // Shadow for quality texture
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminAddRecipe()),
+                  );
+                },
+                child: const Text(
+                  'Add Recipes',
+                  style: TextStyle(
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 20), // Spacing between text and buttons
-                // Add Recipes Button
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black87, // Silver-grey background color
-                    foregroundColor: Colors.greenAccent[400],
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20), // Rounded edges
-                    ),
-                    elevation: 5, // Shadow for quality texture
+              ),
+
+
+              const SizedBox(height: 20), // Spacing between buttons
+              // Edit Recipes Button
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), // Rounded edges
                   ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AdminAddRecipe()),
-                    );
-                  },
-                  child: const Text(
-                    'Add Recipes',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  elevation: 10, // Shadow for quality texture
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminEditRecipe()),
+                  );
+                },
+                child: const Text(
+                  'Edit Recipes',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 20), // Spacing between buttons
-                // Edit Recipes Button
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black87, // Silver-grey background color
-                    foregroundColor: Colors.greenAccent[400], // Text color
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20), // Rounded edges
-                    ),
-                    elevation: 5, // Shadow for quality texture
+              ),
+
+
+              const SizedBox(height: 20), // Spacing between buttons
+              // Delete Recipes Button
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), // Rounded edges
                   ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AdminEditRecipe()),
-                    );
-                  },
-                  child: const Text(
-                    'Edit Recipes',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  elevation: 10, // Shadow for quality texture
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminDeleteRecipe()),
+                  );
+                },
+                child: const Text(
+                  'Delete Recipes',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 20), // Spacing between buttons
-                // Delete Recipes Button
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black87, // Silver-grey background color
-                    foregroundColor: Colors.greenAccent[400], // Text color
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20), // Rounded edges
-                    ),
-                    elevation: 5, // Shadow for quality texture
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AdminDeleteRecipe()),
-                    );
-                  },
-                  child: const Text(
-                    'Delete Recipes',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

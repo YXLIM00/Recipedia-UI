@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/background_image_container.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EditRecipeDetailsPage extends StatefulWidget {
@@ -19,6 +18,11 @@ class _EditRecipeDetailsPageState extends State<EditRecipeDetailsPage> {
 
   Map<String, dynamic>? recipeData;
   bool isLoading = true;
+  bool isNutritionalExpanded = false;
+  bool isDietLabelsExpanded = false;
+  bool isCautionsExpanded = false;
+  bool isIngredientsExpanded = false;
+  bool isInstructionsExpanded = false;
 
   @override
   void initState() {
@@ -42,8 +46,10 @@ class _EditRecipeDetailsPageState extends State<EditRecipeDetailsPage> {
       if (snapshot.exists) {
         setState(() {
           recipeData = snapshot.data() as Map<String, dynamic>?;
+
           ingredientsController.text =
               (recipeData?['ingredientLines'] as List<dynamic>?)?.join('\n') ?? '';
+
           isLoading = false;
         });
       }
@@ -73,7 +79,7 @@ class _EditRecipeDetailsPageState extends State<EditRecipeDetailsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Ingredients updated successfully'),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.indigo,
           duration: Duration(seconds: 2), // Optional: Auto-dismiss the SnackBar after 2 seconds
         ),
       );
@@ -90,7 +96,6 @@ class _EditRecipeDetailsPageState extends State<EditRecipeDetailsPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -102,7 +107,7 @@ class _EditRecipeDetailsPageState extends State<EditRecipeDetailsPage> {
     final int servings = (recipeData?['servings'] ?? 1).toDouble().toInt();
     final double? calories = recipeData?['calories']?.toDouble();
     final String caloriesPerServing = (servings > 0 && calories != null)
-        ? '${(calories / servings).toStringAsFixed(0)} kcal per serving'
+        ? '${(calories / servings).toStringAsFixed(0)} kcal'
         : 'N/A';
     final List<String> dietLabels = List<String>.from(recipeData?['dietLabels'] ?? []);
     final List<String> cautions = List<String>.from(recipeData?['cautions'] ?? []);
@@ -111,185 +116,234 @@ class _EditRecipeDetailsPageState extends State<EditRecipeDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Edit Recipe',
-          style: TextStyle(color: Colors.greenAccent[400]),
+          'Edit Recipes',
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.greenAccent[400]),
+        iconTheme: IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
+            color: Colors.white,
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const AuthStateChange()),
-                    (route) => false,
-              );
+              if (mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const AuthStateChange()),
+                      (Route<dynamic> route) => false,
+                );
+              }
             },
           ),
         ],
       ),
-      body: BackgroundContainer(
-        child: GestureDetector(
-          onTap: () {
-            // Unfocus the text field and hide the keyboard when tapping outside
-            FocusScope.of(context).unfocus();
-          },
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Recipe Name
-                Text(
-                  recipeName,
-                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+      body: GestureDetector(
+        onTap: () {
+          // Unfocus the text field and hide the keyboard when tapping outside
+          FocusScope.of(context).unfocus();
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Recipe Name
+              Text(
+                recipeName,
+                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+              const SizedBox(height: 20),
+              // Recipe Image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: imageUrl.isNotEmpty
+                    ? Image.network(imageUrl, height: 250, width: double.infinity, fit: BoxFit.cover)
+                    : const Icon(Icons.broken_image, size: 100),
+              ),
+              const SizedBox(height: 30),
+
+              // Nutritional Facts Section
+              _buildExpandableCard(
+                title: 'Nutrition Facts',
+                isExpanded: isNutritionalExpanded,
+                onTap: () {
+                  setState(() {
+                    isNutritionalExpanded = !isNutritionalExpanded;
+                  });
+                },
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildNutritionalCard('Servings', '$servings servings'),
+                    _buildNutritionalCard('Calories', '${calories?.toStringAsFixed(0) ?? 'N/A'} kcal'),
+                    _buildNutritionalCard('Calories per Serving', caloriesPerServing),
+                  ],
                 ),
+              ),
 
-                const SizedBox(height: 20),
-                // Recipe Image
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: imageUrl.isNotEmpty
-                      ? Image.network(imageUrl, height: 250, width: double.infinity, fit: BoxFit.cover)
-                      : const Icon(Icons.broken_image, size: 100),
+              // Diet Labels Section
+              _buildExpandableCard(
+                title: 'Diet Labels',
+                isExpanded: isDietLabelsExpanded,
+                onTap: () {
+                  setState(() {
+                    isDietLabelsExpanded = !isDietLabelsExpanded;
+                  });
+                },
+                content: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: dietLabels.map((label) {
+                    return Chip(
+                      label: Text(label, style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),),
+                      backgroundColor: Colors.white,
+                    );
+                  }).toList(),
                 ),
+              ),
 
-                const SizedBox(height: 30),
-                // Display Nutrition Facts using _buildNutritionalCard
-                const Text('Nutrition Facts:', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                _buildNutritionalCard('Servings', '$servings servings'),
-                _buildNutritionalCard('Calories', '${calories?.toStringAsFixed(0) ?? 'N/A'} kcal'),
-                _buildNutritionalCard('Calories per Serving', caloriesPerServing),
-
-                // Diet Labels
-                const SizedBox(height: 30),
-                _buildTagsSection('Diet Labels', dietLabels),
-
-                // Cautions
-                const SizedBox(height: 30),
-                _buildTagsSection('Cautions', cautions),
-
-                // Cooking Instructions
-                const SizedBox(height: 30),
-                const Text(
-                  'Cooking Instructions:',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+              // Cautions Section
+              _buildExpandableCard(
+                title: 'Cautions',
+                isExpanded: isCautionsExpanded,
+                onTap: () {
+                  setState(() {
+                    isCautionsExpanded = !isCautionsExpanded;
+                  });
+                },
+                content: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: cautions.map((caution) {
+                    return Chip(
+                      label: Text(caution),
+                      backgroundColor: Colors.red,
+                    );
+                  }).toList(),
                 ),
-                _buildRecipeUrl(recipeUrl),
+              ),
 
-                // Editable Ingredients
-                const SizedBox(height: 30),
-                const Text(
-                  'Edit Ingredients:',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: ingredientsController,
-                  decoration: const InputDecoration(
-                    labelText: 'Ingredients (one per line)',
-                    labelStyle: TextStyle(color: Colors.greenAccent, fontSize: 20), // Label color
-                    hintText: 'Enter each ingredient on a new line',
-                    hintStyle: TextStyle(color: Colors.grey), // Hint color for better visibility
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.greenAccent,
-                        width: 4, // Increase the width to make it bold
+              // Ingredients Section
+              _buildExpandableCard(
+                title: 'Edit Ingredients',
+                isExpanded: isIngredientsExpanded,
+                onTap: () {
+                  setState(() {
+                    isIngredientsExpanded = !isIngredientsExpanded;
+                  });
+                },
+                content: Column(
+                  children: [
+                    TextField(
+                      controller: ingredientsController,
+                      decoration: const InputDecoration(
+                        labelText: 'Ingredients (one per line)',
+                        labelStyle: TextStyle(color: Colors.indigo, fontSize: 20), // Label color
+                        hintText: 'Enter each ingredient on a new line',
+                        hintStyle: TextStyle(color: Colors.grey), // Hint color for better visibility
+                        border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.indigo,
+                            width: 4, // Increase the width to make it bold
+                          ),
+                        ),
                       ),
+                      style: const TextStyle(color: Colors.white), // Text color inside TextField
+                      maxLines: 10,
                     ),
-                  ),
-                  style: const TextStyle(color: Colors.white), // Text color inside TextField
-                  maxLines: 10,
+                  ],
                 ),
+              ),
 
+              // Cooking Instructions Section
+              _buildExpandableCard(
+                title: 'Cooking Instructions',
+                isExpanded: isInstructionsExpanded,
+                onTap: () {
+                  setState(() {
+                    isInstructionsExpanded = !isInstructionsExpanded;
+                  });
+                },
+                content: ElevatedButton(
+                  onPressed: () {
+                    if (recipeUrl.isNotEmpty) {
+                      _launchUrl(recipeUrl);
+                    }
+                  },
+                  child: const Text('View Recipe Online'),
+                ),
+              ),
 
-                const SizedBox(height: 30),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: updateRecipeInFirestore,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-                    ),
-                    child: Text(
-                      'Edit Recipe',
-                      style: TextStyle(fontSize: 20, color: Colors.greenAccent[400]),
-                    ),
+              const SizedBox(height: 40),
+              Center(
+                child: ElevatedButton(
+                  onPressed: updateRecipeInFirestore,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+                  ),
+                  child: Text(
+                    'Edit Recipe',
+                    style: TextStyle(fontSize: 20, color: Colors.indigo),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNutritionalCard(String title, String value) {
+  Widget _buildExpandableCard({
+    required String title,
+    required bool isExpanded,
+    required VoidCallback onTap,
+    required Widget content,
+  }) {
     return Card(
-      color: Colors.grey[800],
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+      color: Colors.black,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+            trailing: Icon(
+              isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+              color: Colors.indigo,
             ),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 16, color: Colors.white),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTagsSection(String title, List<String> tags) {
-    if (tags.isEmpty) return const SizedBox();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '$title:',
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          children: tags.map((tag) => Chip(label: Text(tag, style: const TextStyle(color: Colors.white)), backgroundColor: Colors.grey[800])).toList(),
-        ),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
-
-  Widget _buildRecipeUrl(String url) {
-    return Card(
-      color: Colors.grey[800],
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: GestureDetector(
-          onTap: () async {
-            if (await canLaunchUrl(Uri.parse(url))) {
-              await launchUrl(Uri.parse(url));
-            }
-          },
-          child: Text(
-            url,
-            style: const TextStyle(color: Colors.blue),
+            onTap: onTap,
           ),
-        ),
+          if (isExpanded) Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: content,
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildNutritionalCard(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
+          Text(value, style: const TextStyle(color: Colors.white, fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
+  void _launchUrl(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }
