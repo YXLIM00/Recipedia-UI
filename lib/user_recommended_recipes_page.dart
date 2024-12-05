@@ -1,66 +1,73 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fyp_recipe/auth_state_change.dart';
 import 'package:fyp_recipe/user_bottom_nav_bar.dart';
 import 'package:fyp_recipe/user_recommended_recipe_details.dart';
-import 'package:fyp_recipe/auth_state_change.dart';
 
-class UserSearchPage extends StatefulWidget {
-  const UserSearchPage({super.key});
+class UserRecommendedRecipesPage extends StatefulWidget {
+  const UserRecommendedRecipesPage({super.key});
 
   @override
-  State<UserSearchPage> createState() => _UserSearchPageState();
+  State<UserRecommendedRecipesPage> createState() => _UserRecommendedRecipesPageState();
 }
 
-class _UserSearchPageState extends State<UserSearchPage> {
+class _UserRecommendedRecipesPageState extends State<UserRecommendedRecipesPage> {
   final user = FirebaseAuth.instance.currentUser!;
 
   // Define the search terms for categories
   final List<String> foodCategories = ['chicken', 'fish', 'beef', 'rice'];
 
-  // Fetch and group recipes by food category
-  Future<Map<String, List<Map<String, dynamic>>>> fetchGroupedRecipes() async {
+  // Fetch recommended recipes and group them by ingredients/food
+  Future<Map<String, List<Map<String, dynamic>>>> fetchRecommendedRecipes() async {
     try {
       final recipesCollection = FirebaseFirestore.instance.collection('recipes');
-      final snapshot = await recipesCollection.get();
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
 
-      final groupedRecipes = <String, List<Map<String, dynamic>>>{};
+      if (userDoc.exists) {
+        final customDietLabels = List<String>.from(userDoc.data()?['custom_dietLabels'] ?? []);
+        final customHealthLabels = List<String>.from(userDoc.data()?['custom_healthLabels'] ?? []);
 
-      snapshot.docs.map((doc) => doc.data()).forEach((recipe) {
-        final ingredients = List<Map<String, dynamic>>.from(recipe['ingredients'] ?? []);
+        final snapshot = await recipesCollection.get();
 
-        // Check if any ingredient food matches the categories (case insensitive)
-        bool matchesCategory = false;
-        String matchedCategory = 'Other';
+        final groupedRecipes = <String, List<Map<String, dynamic>>>{};
 
-        for (var ingredient in ingredients) {
-          if (ingredient['food'] != null &&
-              foodCategories.any((category) => ingredient['food'].toLowerCase().contains(category))) {
-            matchesCategory = true;
-            matchedCategory = foodCategories.firstWhere(
-                  (category) => ingredient['food'].toLowerCase().contains(category),
-              orElse: () => 'Other',
-            );
-            break;
+        snapshot.docs.map((doc) => doc.data()).forEach((recipe) {
+          final dietLabels = List<String>.from(recipe['dietLabels'] ?? []);
+          final healthLabels = List<String>.from(recipe['healthLabels'] ?? []);
+          final ingredients = List<Map<String, dynamic>>.from(recipe['ingredients'] ?? []);
+
+          // Check if any ingredient food matches the categories (case insensitive)
+          bool matchesCategory = false;
+
+          for (var ingredient in ingredients) {
+            if (ingredient['food'] != null && foodCategories.any((category) => ingredient['food'].toLowerCase().contains(category))) {
+              matchesCategory = true;
+              break;
+            }
           }
-        }
 
-        // If the recipe matches the category, group it
-        if (matchesCategory) {
-          if (!groupedRecipes.containsKey(matchedCategory)) {
-            groupedRecipes[matchedCategory] = [];
-          }
-          groupedRecipes[matchedCategory]!.add(recipe);
-        } else {
-          // If the recipe doesn't match any category, group it under 'Others'
-          if (!groupedRecipes.containsKey('Others')) {
-            groupedRecipes['Others'] = [];
-          }
-          groupedRecipes['Others']!.add(recipe);
-        }
-      });
+          // If a match is found, check diet/health labels
+          final matchesDietLabels = customDietLabels.every(dietLabels.contains);
+          final matchesHealthLabels = customHealthLabels.every(healthLabels.contains);
 
-      return groupedRecipes;
+          // If the recipe matches the category and the diet/health labels, group it
+          if (matchesCategory && matchesDietLabels && matchesHealthLabels) {
+            final category = foodCategories.firstWhere(
+                    (category) => ingredients.any((ingredient) => ingredient['food'].toLowerCase().contains(category)),
+                orElse: () => 'Other');
+
+            if (!groupedRecipes.containsKey(category)) {
+              groupedRecipes[category] = [];
+            }
+            groupedRecipes[category]!.add(recipe);
+          }
+        });
+
+        return groupedRecipes;
+      } else {
+        return {};
+      }
     } catch (e) {
       throw Exception('Failed to fetch recipes: $e');
     }
@@ -70,10 +77,13 @@ class _UserSearchPageState extends State<UserSearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recipedia', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Recipedia',
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -90,21 +100,19 @@ class _UserSearchPageState extends State<UserSearchPage> {
         ],
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: 20),
           Center(
             child: Text(
-              'All Recipes',
+              'Recommended Recipes',
               style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.indigo),
             ),
           ),
 
-          // All Recipes Sections Card
           SizedBox(height: 20),
           Expanded(
             child: FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
-              future: fetchGroupedRecipes(),
+              future: fetchRecommendedRecipes(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -117,25 +125,10 @@ class _UserSearchPageState extends State<UserSearchPage> {
                 }
 
                 final groupedRecipes = snapshot.data!;
-
-                // Extract "Other" section separately
-                final others = groupedRecipes['Other'];
-
-                // Sort the remaining categories alphabetically
-                final sortedCategories = groupedRecipes.keys
-                    .where((category) => category != 'Other')
-                    .toList()
-                  ..sort();
-
-                // Append "Other" section to the end if it exists
-                if (others != null) {
-                  sortedCategories.add('Other');
-                }
-
                 return ListView.builder(
-                  itemCount: sortedCategories.length,
+                  itemCount: groupedRecipes.keys.length,
                   itemBuilder: (context, index) {
-                    final category = sortedCategories[index];
+                    final category = groupedRecipes.keys.elementAt(index);
                     final recipes = groupedRecipes[category]!;
 
                     return Card(
@@ -243,11 +236,9 @@ class _UserSearchPageState extends State<UserSearchPage> {
               },
             ),
           ),
-
-
         ],
       ),
-      bottomNavigationBar: const UserBottomNavBar(currentIndex: 1),
+      bottomNavigationBar: const UserBottomNavBar(currentIndex: 0),
     );
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/background_image_container.dart';
 import 'package:fyp_recipe/user_bottom_nav_bar.dart';
 import 'package:fyp_recipe/user_recommended_recipe_details.dart';
 
@@ -51,15 +50,15 @@ class _UserFavouritePageState extends State<UserFavouritePage> {
       appBar: AppBar(
         title: Text(
           'Recipedia',
-          style: TextStyle(color: Colors.greenAccent[400]),
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.greenAccent[400]),
+        iconTheme: IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            color: Colors.greenAccent[400],
+            color: Colors.white,
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               if (mounted) {
@@ -71,90 +70,106 @@ class _UserFavouritePageState extends State<UserFavouritePage> {
           ),
         ],
       ),
-      body: BackgroundContainer(
-        child: FutureBuilder<List<Map<String, dynamic>>>(
-          future: _fetchSavedRecipes(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return const Center(child: Text('Error loading favourites.'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No favourite recipes found.'));
-            }
-        
-            final recipes = snapshot.data!;
-            return GridView.builder(
-              padding: const EdgeInsets.all(8.0),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Display 2 items per row.
-                crossAxisSpacing: 8.0,
-                mainAxisSpacing: 8.0,
-                childAspectRatio: 3 / 4, // Adjust the aspect ratio as needed.
-              ),
-              itemCount: recipes.length,
-              itemBuilder: (context, index) {
-                final recipe = recipes[index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => RecommendedRecipeDetails(recipe: recipe),
+      body: Column(
+        children: [
+          // Page Title
+          SizedBox(height: 20),
+          Center(
+            child: Text(
+              'Favourites',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.indigo),
+            ),
+          ),
+          
+          // Favourite Recipes 
+          SizedBox(height: 20),
+          Expanded( // Use Expanded to ensure the GridView takes up available space.
+            child: FutureBuilder<List<Map<String, dynamic>>>(
+              future: _fetchSavedRecipes(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return const Center(child: Text('Error loading favourites.'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No favourite recipes found.'));
+                }
+
+                final recipes = snapshot.data!;
+                return GridView.builder(
+                  padding: const EdgeInsets.all(20.0),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // Display 2 items per row.
+                    crossAxisSpacing: 20.0,
+                    mainAxisSpacing: 20.0,
+                  ),
+                  itemCount: recipes.length,
+                  itemBuilder: (context, index) {
+                    final recipe = recipes[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => RecommendedRecipeDetails(recipe: recipe),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              spreadRadius: 2,
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Fixed height for the image
+                            ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(12.0),
+                              ),
+                              child: Image.network(
+                                recipe['image'], // URL of the recipe image.
+                                height: 140, // Fixed height for the image
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.broken_image),
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                recipe['label'], // Recipe name.
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 3, // Limit label to 3 lines
+                                overflow: TextOverflow.ellipsis, // Ellipsis when the text overflows
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(12.0),
-                            ),
-                            child: Image.network(
-                              recipe['image'], // URL of the recipe image.
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.broken_image),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            recipe['label'], // Recipe name.
-                            style: const TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 );
               },
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
-      bottomNavigationBar: const UserBottomNavBar(currentIndex: 3),
+
+      bottomNavigationBar: const UserBottomNavBar(currentIndex: 2),
     );
   }
+
 }
