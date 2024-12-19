@@ -1,9 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/background_image_container.dart';
-import 'package:fyp_recipe/edamam_recipe_search.dart';
-import 'package:fyp_recipe/admin_add_recipe_details.dart';
+import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
+import 'package:fyp_recipe/Edamam_Services/edamam_recipe_search.dart';
+import 'package:fyp_recipe/Admin/admin_add_recipe_details.dart';
 
 class AdminAddRecipe extends StatefulWidget {
   const AdminAddRecipe({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_recipe/login.dart';
-import 'package:fyp_recipe/register.dart';
+import 'package:fyp_recipe/User_Registration/login.dart';
+import 'package:fyp_recipe/User_Registration/register.dart';
 
 class PageToggle extends StatefulWidget {
   const PageToggle({super.key});

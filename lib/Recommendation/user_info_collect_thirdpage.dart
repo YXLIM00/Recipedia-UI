@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/user_home_page.dart';
-import 'package:fyp_recipe/user_info_collect_secondpage.dart';
+import 'package:fyp_recipe/Recommendation/user_info_collect_secondpage.dart';
+import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
+import 'package:fyp_recipe/Recommendation/user_home_page.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class UserInfoPage3 extends StatefulWidget {

@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fyp_recipe/admin_add_recipe.dart';
-import 'package:fyp_recipe/admin_delete_recipe.dart';
-import 'package:fyp_recipe/admin_edit_recipe.dart';
-import 'package:fyp_recipe/auth_state_change.dart';
+import 'package:fyp_recipe/Admin/admin_add_recipe.dart';
+import 'package:fyp_recipe/Admin/admin_delete_recipe.dart';
+import 'package:fyp_recipe/Admin/admin_edit_recipe.dart';
+import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
 
 class AdminHomePage extends StatefulWidget {
   const AdminHomePage({super.key});

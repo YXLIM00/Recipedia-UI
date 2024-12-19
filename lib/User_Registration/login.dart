@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fyp_recipe/background_image_container.dart';
-import 'package:fyp_recipe/forgot_password.dart';
+import 'package:fyp_recipe/Share_Services/background_image_container.dart';
+import 'package:fyp_recipe/User_Registration/forgot_password.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback showRegisterPage; //create function to toggle pages

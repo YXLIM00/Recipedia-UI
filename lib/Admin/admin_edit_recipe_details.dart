@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fyp_recipe/auth_state_change.dart';
+import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EditRecipeDetailsPage extends StatefulWidget {
@@ -340,8 +340,8 @@ class _EditRecipeDetailsPageState extends State<EditRecipeDetailsPage> {
   }
 
   void _launchUrl(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
+    if (await canLaunchUrl(url as Uri)) {
+      await launchUrl(url as Uri);
     } else {
       throw 'Could not launch $url';
     }

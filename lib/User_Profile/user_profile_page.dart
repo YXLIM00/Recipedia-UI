@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/user_bottom_nav_bar.dart';
-import 'package:fyp_recipe/user_info_change_firstpage.dart';
-import 'package:fyp_recipe/user_info_change_secondpage.dart';
-import 'package:fyp_recipe/user_info_change_thirdpage.dart';
+import 'package:fyp_recipe/User_Profile/user_info_change_firstpage.dart';
+import 'package:fyp_recipe/User_Profile/user_info_change_secondpage.dart';
+import 'package:fyp_recipe/User_Profile/user_info_change_thirdpage.dart';
+import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
+import 'package:fyp_recipe/Share_Services/user_bottom_nav_bar.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'auth_state_change.dart';
+import '../User_Registration/auth_state_change.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class RecommendedRecipeDetails extends StatefulWidget {

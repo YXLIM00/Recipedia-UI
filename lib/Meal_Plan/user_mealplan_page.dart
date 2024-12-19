@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/user_bottom_nav_bar.dart';
+import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
+import 'package:fyp_recipe/Share_Services/user_bottom_nav_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

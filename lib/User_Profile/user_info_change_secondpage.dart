@@ -1,90 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/user_home_page.dart';
-import 'package:fyp_recipe/user_profile_page.dart';
-import 'package:multi_select_flutter/multi_select_flutter.dart';
+import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
+import 'package:fyp_recipe/User_Profile/user_profile_page.dart';
 
-class UserChangeInfoPage3 extends StatefulWidget {
-  const UserChangeInfoPage3({super.key});
+class UserChangeInfoPage2 extends StatefulWidget {
+  const UserChangeInfoPage2({super.key});
 
   @override
-  UserChangeInfoPage3State createState() => UserChangeInfoPage3State();
+  UserChangeInfoPage2State createState() => UserChangeInfoPage2State();
 }
 
-class UserChangeInfoPage3State extends State<UserChangeInfoPage3> {
+class UserChangeInfoPage2State extends State<UserChangeInfoPage2> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  String _selectedRadioValue = ''; // To track the selected radio button
+  // Initialize with default values to avoid null errors
+  String _glucoseLevel = '';
+  String _pressureLevel = '';
+  String _cholesterolLevel = '';
+  String _diabetes = '';
 
-  // List to store selected allergies
-  List<String> _selectedAllergies = [];
+  Future<void> _saveHealthData() async {
+    // List to hold missing fields
+    List<String> missingFields = [];
 
-  // List of available allergies preferences
-  final List<String> _allergyOptions = [
-    'Dairy-Free',
-    'Gluten-Free',
-    'Red-Meat-Free',
-    'Pork-Free',
-    'Fish-Free',
-    'Shellfish-Free',
-    'Celery-Free',
-    'Peanut-Free',
-    'Vegetarian',
-    'Vegan',
-    'Alcohol-Free',
-  ];
+    // Check for missing fields
+    if (_glucoseLevel.isEmpty) missingFields.add('Blood Glucose Level');
+    if (_pressureLevel.isEmpty) missingFields.add('Blood Pressure Level');
+    if (_cholesterolLevel.isEmpty) missingFields.add('Blood Cholesterol Level');
+    if (_diabetes.isEmpty) missingFields.add('Diabetes');
 
-  // Method to update selected radio value
-  void _onRadioChanged(String value) {
-    setState(() {
-      _selectedRadioValue = value;
-    });
-  }
+    // If there are missing fields, show an error message in AlertDialog
+    if (missingFields.isNotEmpty) {
+      String missingFieldsMessage = missingFields.join(', ');
+      String errorMessage = 'Please fill the missing field(s): $missingFieldsMessage';
 
-  // Method to handle multi-select combo box changes
-  void _onAllergyConfirm(List<String> selectedValues) {
-    setState(() {
-      _selectedAllergies = selectedValues;
-    });
-  }
-
-  // Function to save data to Firestore
-  Future<void> _saveDietData() async {
-    if (_selectedRadioValue.isEmpty) {
-      // Show an AlertDialog if the diet purpose is not filled
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Missing Value'),
-            content: const Text('Please fill the missing field(s): Diet Purpose'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-                child: const Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
-              ),
-            ],
-          );
-        },
-      );
-      return; // Exit early to prevent further execution
+      // Show error dialog with the message
+      _showErrorDialog(errorMessage);
+      return; // Return early if validation fails
     }
-
 
     final User? user = _auth.currentUser;
     if (user != null) {
       try {
         await _firestore.collection('users').doc(user.uid).set({
-          'diet_purpose': _selectedRadioValue, // Store as a single string
-          'allergies_preferences': _selectedAllergies, // Store as an array
+          'blood_glucose_level': _glucoseLevel,
+          'blood_pressure_level': _pressureLevel,
+          'blood_cholesterol_level': _cholesterolLevel,
+          'diabetes': _diabetes,
         }, SetOptions(merge: true));
 
-        // Navigate to the next page after saving data
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const UserProfilePage()),
@@ -96,7 +62,7 @@ class UserChangeInfoPage3State extends State<UserChangeInfoPage3> {
             return AlertDialog(
               title: const Text('Successful!'),
               content: const Text(
-                "Dietary Information Updated ✅",
+                "Health Information Updated ✅",
                 style: TextStyle(fontSize: 16),
               ),
               actions: [
@@ -112,95 +78,83 @@ class UserChangeInfoPage3State extends State<UserChangeInfoPage3> {
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save data: $e')),
+          SnackBar(content: Text('Failed to save user data: $e')),
         );
       }
     }
   }
 
+  void _showErrorDialog(String errorMessage) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Missing Value',
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 26,
+                fontWeight: FontWeight.bold
+            ),
+          ),
+          content: Text(errorMessage, style: TextStyle(color: Colors.black, fontSize: 16),),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-  // Method to build neumorphic-style radio buttons
   Widget _buildNeumorphicRadio(String label, String value, String groupValue, Function(String) onChanged) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white, // No color change for the container
+        color: Colors.white, // Default background color
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.shade500,
-            offset: const Offset(5, 5),
+            offset: Offset(5, 5),
             blurRadius: 10,
             spreadRadius: 1,
           ),
           BoxShadow(
             color: Colors.white,
-            offset: const Offset(-5, -5),
+            offset: Offset(-5, -5),
             blurRadius: 10,
             spreadRadius: 1,
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Place the radio button and label on opposite sides
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Ensure label and radio button are spaced out
         children: [
-          // Label Text on the left
+          // Label Text
           Text(
             label,
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black, // Text color stays consistent
+              fontWeight: FontWeight.bold,
+              color: Colors.black, // Consistent text color
             ),
           ),
-          // Radio Button circle on the right side
+          // Radio Button
           Radio<String>(
             value: value,
-            groupValue: groupValue, // Make sure groupValue is passed correctly
+            groupValue: groupValue,
             onChanged: (String? newValue) {
-              if (newValue != null) {
-                onChanged(newValue); // Update state when radio button is pressed
-              }
+              setState(() => onChanged(newValue!));
             },
             activeColor: Colors.indigo.shade400, // Circle changes color when selected
           ),
         ],
       ),
-    );
-  }
-
-
-
-  // Method to build multi-select dropdown (ComboBox)
-  Widget _buildAllergyMultiSelect() {
-    return MultiSelectDialogField(
-      items: _allergyOptions
-          .map((allergy) => MultiSelectItem<String>(allergy, allergy))
-          .toList(),
-      title: Text("Allergies:", style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
-      selectedColor: Colors.indigo,
-      buttonText: Text(" Choose Here", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
-      decoration: BoxDecoration(
-        color: Colors.white, // No color change for the container
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade500,
-            offset: const Offset(5, 5),
-            blurRadius: 10,
-            spreadRadius: 1,
-          ),
-          BoxShadow(
-            color: Colors.white,
-            offset: const Offset(-5, -5),
-            blurRadius: 10,
-            spreadRadius: 1,
-          ),
-        ],
-      ),
-      onConfirm: (values) {
-        _onAllergyConfirm(values.cast<String>());
-      },
     );
   }
 
@@ -247,7 +201,7 @@ class UserChangeInfoPage3State extends State<UserChangeInfoPage3> {
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const UserHomePage()),
+                          MaterialPageRoute(builder: (context) => const UserProfilePage()),
                         );
                       },
                       child: Text(
@@ -266,10 +220,10 @@ class UserChangeInfoPage3State extends State<UserChangeInfoPage3> {
                   ],
                 ),
 
-                const SizedBox(height: 40),
+                SizedBox(height: 40),
                 Center(
                   child: Text(
-                    'Dietary Information',
+                    'Health Information',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 26,
@@ -278,40 +232,72 @@ class UserChangeInfoPage3State extends State<UserChangeInfoPage3> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 50),
 
-                // Diet Purpose
-                Text('Diet Purpose:', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
-                const SizedBox(height: 10),
+                SizedBox(height: 40),
+                // Blood Glucose Level
+                Text('Blood Glucose Level:', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
+                SizedBox(height: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildNeumorphicRadio('Maintain Health', 'Maintain Health', _selectedRadioValue, _onRadioChanged),
-                    const SizedBox(height: 20),
-                    _buildNeumorphicRadio('Gain Muscle', 'Gain Muscle', _selectedRadioValue, _onRadioChanged),
-                    const SizedBox(height: 20),
-                    _buildNeumorphicRadio('Lose Weight', 'Lose Weight', _selectedRadioValue, _onRadioChanged),
+                    _buildNeumorphicRadio('High', 'High', _glucoseLevel, (val) => _glucoseLevel = val),
+                    SizedBox(height: 20),
+                    _buildNeumorphicRadio('Normal', 'Normal', _glucoseLevel, (val) => _glucoseLevel = val),
+                    SizedBox(height: 20),
+                    _buildNeumorphicRadio('Low', 'Low', _glucoseLevel, (val) => _glucoseLevel = val),
                   ],
                 ),
 
-                const SizedBox(height: 40),
-                // Allergies
-                Text('Allergies:', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
-                const SizedBox(height: 10),
+                SizedBox(height: 40),
+                // Blood Pressure Level
+                Text('Blood Pressure Level:', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
+                SizedBox(height: 10),
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildAllergyMultiSelect(),
+                    _buildNeumorphicRadio('High', 'High', _pressureLevel, (val) => _pressureLevel = val),
+                    SizedBox(height: 20),
+                    _buildNeumorphicRadio('Normal', 'Normal', _pressureLevel, (val) => _pressureLevel = val),
+                    SizedBox(height: 20),
+                    _buildNeumorphicRadio('Low', 'Low', _pressureLevel, (val) => _pressureLevel = val),
                   ],
                 ),
 
-                const SizedBox(height: 50),
+                SizedBox(height: 40),
+
+                // Blood Cholesterol Level
+                Text('Blood Cholesterol Level:', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(child: _buildNeumorphicRadio('High', 'High', _cholesterolLevel, (val) => _cholesterolLevel = val)),
+                    SizedBox(width: 20),
+                    Expanded(child: _buildNeumorphicRadio('Normal', 'Normal', _cholesterolLevel, (val) => _cholesterolLevel = val)),
+                  ],
+                ),
+
+                SizedBox(height: 40),
+
+                // Diabetes
+                Text('Do you have Diabetes?', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(child: _buildNeumorphicRadio('Yes', 'Yes', _diabetes, (val) => _diabetes = val)),
+                    SizedBox(width: 20),
+                    Expanded(child: _buildNeumorphicRadio('No', 'No', _diabetes, (val) => _diabetes = val)),
+                  ],
+                ),
+
+                SizedBox(height: 50),
+
                 // Buttons Row
                 Column(
                   children: [
                     Center(
                       child: GestureDetector(
                         onTap: () {
-                          _saveDietData();
+                          _saveHealthData();
                         },
                         child: Container(
                           decoration: BoxDecoration(
@@ -352,6 +338,7 @@ class UserChangeInfoPage3State extends State<UserChangeInfoPage3> {
                     ),
                   ],
                 ),
+
               ],
             ),
           ),
@@ -360,3 +347,4 @@ class UserChangeInfoPage3State extends State<UserChangeInfoPage3> {
     );
   }
 }
+

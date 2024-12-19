@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
-import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/user_profile_page.dart';
+import 'package:fyp_recipe/Recommendation/user_info_collect_secondpage.dart';
+import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
+import 'package:fyp_recipe/Recommendation/user_home_page.dart';
 
-class UserChangeInfoPage1 extends StatefulWidget {
-  const UserChangeInfoPage1({super.key});
+class UserInfoPage1 extends StatefulWidget {
+  const UserInfoPage1({super.key});
 
   @override
-  UserChangeInfoPage1State createState() => UserChangeInfoPage1State();
+  UserInfoPage1State createState() => UserInfoPage1State();
 }
 
-class UserChangeInfoPage1State extends State<UserChangeInfoPage1> {
+class UserInfoPage1State extends State<UserInfoPage1> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String? _selectedSex;
@@ -32,6 +33,37 @@ class UserChangeInfoPage1State extends State<UserChangeInfoPage1> {
     "Highly Active \n(heavy exercise 6-7 days/week)": 1.725,
     "Extremely Active \n(athlete training/physical job)": 1.9,
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUserData();
+  }
+
+  Future<void> _checkUserData() async {
+    final User? user = _auth.currentUser;
+    if (user != null) {
+      final DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+      if (userDoc.exists &&
+          userDoc['sex'] != null &&
+          userDoc['age'] != null &&
+          userDoc['height'] != null &&
+          userDoc['weight'] != null &&
+          userDoc['activity_factor'] != null &&
+          userDoc['blood_glucose_level'] != null &&
+          userDoc['blood_pressure_level'] != null &&
+          userDoc['blood_cholesterol_level'] != null &&
+          userDoc['diabetes'] != null &&
+          userDoc['diet_purpose'] != null) {
+        // If user data is already present, navigate to UserHomePage
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const UserHomePage()),
+        );
+
+      }
+    }
+  }
 
   Future<void> _saveUserData() async {
     // List to hold missing fields
@@ -83,28 +115,7 @@ class UserChangeInfoPage1State extends State<UserChangeInfoPage1> {
         // Navigate to the next page after saving data
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => UserProfilePage()),
-        );
-
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Successful!'),
-              content: const Text(
-                "Personal Information Updated ✅",
-                style: TextStyle(fontSize: 16),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                  child: const Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
-                ),
-              ],
-            );
-          },
+          MaterialPageRoute(builder: (context) => UserInfoPage2()),
         );
       }
     } catch (e) {
@@ -122,9 +133,9 @@ class UserChangeInfoPage1State extends State<UserChangeInfoPage1> {
         title: Text(
           'Missing or Invalid Value',
           style: TextStyle(
-              color: Colors.black,
-              fontSize: 26,
-              fontWeight: FontWeight.bold
+            color: Colors.black,
+            fontSize: 26,
+            fontWeight: FontWeight.bold
           ),
         ),
         content: Text(message, style: TextStyle(color: Colors.black, fontSize: 16),),
@@ -133,7 +144,7 @@ class UserChangeInfoPage1State extends State<UserChangeInfoPage1> {
             onPressed: () {
               Navigator.of(context).pop(); // Close the dialog
             },
-            child: Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
+            child: Text('OK', style: TextStyle(color: Colors.indigo, fontSize: 16, fontWeight: FontWeight.bold),),
           ),
         ],
       ),
@@ -507,7 +518,7 @@ class UserChangeInfoPage1State extends State<UserChangeInfoPage1> {
                               onTap: () {
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const UserProfilePage()),
+                                  MaterialPageRoute(builder: (context) => const UserHomePage()),
                                 );
                               },
                               child: Text(
@@ -587,49 +598,46 @@ class UserChangeInfoPage1State extends State<UserChangeInfoPage1> {
 
                         SizedBox(height: 40),
                         // Save and Proceed Button
-                        Column(
-                          children: [
-                            Center(
-                              child: GestureDetector(
-                                onTap: () {
-                                  _saveUserData();
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [Colors.indigo.shade200, Colors.indigo.shade400],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.shade500,
-                                        offset: Offset(5, 5),
-                                        blurRadius: 10,
-                                        spreadRadius: 1,
-                                      ),
-                                      BoxShadow(
-                                        color: Colors.white,
-                                        offset: Offset(-5, -5),
-                                        blurRadius: 10,
-                                        spreadRadius: 1,
-                                      ),
-                                    ],
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: GestureDetector(
+                            onTap: () {
+                              _saveUserData();
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Colors.indigo.shade200, Colors.indigo.shade400],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.shade500,
+                                    offset: Offset(5, 5),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
                                   ),
-                                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                                  child: Text(
-                                    'Update',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 20,
-                                    ),
+                                  BoxShadow(
+                                    color: Colors.white,
+                                    offset: Offset(-5, -5),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
                                   ),
+                                ],
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                              child: Text(
+                                'Save & Proceed',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 20,
                                 ),
                               ),
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),

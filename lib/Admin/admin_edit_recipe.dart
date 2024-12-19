@@ -1,20 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/edamam_recipe_image.dart';
+import 'package:fyp_recipe/Edamam_Services/edamam_recipe_image.dart';
+import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
+import 'package:fyp_recipe/Admin/admin_edit_recipe_details.dart';
 import 'package:http/http.dart' as http;
 
-class AdminDeleteRecipe extends StatefulWidget {
-  const AdminDeleteRecipe({super.key});
+class AdminEditRecipe extends StatefulWidget {
+  const AdminEditRecipe({super.key});
 
   @override
-  AdminDeleteRecipeState createState() => AdminDeleteRecipeState();
+  AdminEditRecipeState createState() => AdminEditRecipeState();
 }
 
-class AdminDeleteRecipeState extends State<AdminDeleteRecipe> {
+class AdminEditRecipeState extends State<AdminEditRecipe> {
   final admin = FirebaseAuth.instance.currentUser!;
-  List<dynamic> recipes = [];
+  List<QueryDocumentSnapshot> recipes = [];
   bool isLoading = true;
 
   @override
@@ -25,10 +26,11 @@ class AdminDeleteRecipeState extends State<AdminDeleteRecipe> {
 
   // Fetch recipes from Firestore
   Future<void> fetchRecipesFromFirestore() async {
+    setState(() => isLoading = true);
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('recipes')
-          .orderBy('label') // Assuming there's a 'label' field for sorting
+          .orderBy('label') // Fetch recipes in alphabetical order
           .get();
 
       setState(() {
@@ -82,88 +84,12 @@ class AdminDeleteRecipeState extends State<AdminDeleteRecipe> {
     }
   }
 
-
-  // Function to delete a recipe with a confirmation dialog and success message in an AlertDialog
-  Future<void> deleteRecipe(String docId) async {
-    // Show a confirmation dialog
-    bool? shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Deletion', style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),),
-          content: const Text('Are you sure you want to delete this recipe?', style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false); // Dismiss dialog with "Cancel"
-              },
-              child: const Text('Cancel', style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true); // Confirm deletion
-              },
-              child: const Text('Confirm', style: TextStyle(color: Colors.indigo, fontSize: 16, fontWeight: FontWeight.bold),),
-            ),
-          ],
-        );
-      },
-    );
-
-    // If the user confirmed, delete the recipe
-    if (shouldDelete == true) {
-      try {
-        await FirebaseFirestore.instance.collection('recipes').doc(docId).delete();
-
-        // Show success message in an AlertDialog
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Success', style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),),
-              content: const Text('Recipe deleted successfully', style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Dismiss the dialog
-                    fetchRecipesFromFirestore(); // Refresh the list after deletion
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-      } catch (e) {
-        // If deletion fails, show an error dialog
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Error', style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),),
-              content: Text('Failed to delete recipe: ${e.toString()}', style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Dismiss the dialog
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-      }
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Delete Recipes',
+          'Edit Recipes',
           style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
@@ -188,12 +114,7 @@ class AdminDeleteRecipeState extends State<AdminDeleteRecipe> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : recipes.isEmpty
-          ? const Center(
-        child: Text(
-          'No recipes found',
-          style: TextStyle(color: Colors.black),
-        ),
-      )
+          ? const Center(child: Text('No recipes found', style: TextStyle(color: Colors.white)))
           : GridView.builder(
         padding: const EdgeInsets.all(8.0),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -206,7 +127,7 @@ class AdminDeleteRecipeState extends State<AdminDeleteRecipe> {
         itemBuilder: (context, index) {
           return RecipeCard(
             recipe: recipes[index],
-            onDelete: () => deleteRecipe(recipes[index].id),
+            updateImage: () => updateRecipeImage(recipes[index]),
           );
         },
       ),
@@ -214,16 +135,14 @@ class AdminDeleteRecipeState extends State<AdminDeleteRecipe> {
   }
 }
 
-
 class RecipeCard extends StatelessWidget {
   final QueryDocumentSnapshot recipe;
-  final VoidCallback onDelete;
+  final VoidCallback updateImage;
 
-  const RecipeCard({super.key, required this.recipe, required this.onDelete});
+  const RecipeCard({super.key, required this.recipe, required this.updateImage});
 
   @override
   Widget build(BuildContext context) {
-    // Extracting Firestore recipe fields
     final String label = recipe['label'] ?? 'Unknown Recipe';
     final String imageUrl = recipe['image'] ?? '';
 
@@ -238,9 +157,10 @@ class RecipeCard extends StatelessWidget {
             Container(
               height: 40,
               alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
                 label,
-                maxLines: 2,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
               ),
@@ -260,9 +180,8 @@ class RecipeCard extends StatelessWidget {
                     return const Center(child: CircularProgressIndicator());
                   },
                   errorBuilder: (context, error, stackTrace) {
-                    // Call updateRecipeImage() if the image is broken
-                    final adminDeleteRecipeState = context.findAncestorStateOfType<AdminDeleteRecipeState>();
-                    adminDeleteRecipeState?.updateRecipeImage(recipe);
+                    // Trigger updateRecipeImage if the image is broken
+                    updateImage();
                     return const Icon(Icons.broken_image, size: 80, color: Colors.grey);
                   },
                 )
@@ -274,16 +193,21 @@ class RecipeCard extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+                  backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onPressed: onDelete,
-                child: const Text(
-                  'Delete Recipe',
-                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditRecipeDetailsPage(recipeId: recipe.id), // Correct usage
+                    ),
+                  );
+                },
+
+                child: Text('Edit Recipe', style: TextStyle(color: Colors.indigo, fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -292,5 +216,3 @@ class RecipeCard extends StatelessWidget {
     );
   }
 }
-
-

@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fyp_recipe/page_toggle.dart';
-import 'package:fyp_recipe/admin_homepage.dart';
-import 'package:fyp_recipe/user_info_collect_firstpage.dart';
+import 'package:fyp_recipe/Recommendation/user_info_collect_firstpage.dart';
+import 'package:fyp_recipe/User_Registration/page_toggle.dart';
+import 'package:fyp_recipe/Admin/admin_homepage.dart';
 
 class AuthStateChange extends StatelessWidget {
   const AuthStateChange({super.key});

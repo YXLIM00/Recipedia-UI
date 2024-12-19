@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fyp_recipe/auth_state_change.dart';
-import 'package:fyp_recipe/user_profile_page.dart';
+import 'package:fyp_recipe/Recommendation/user_info_collect_firstpage.dart';
+import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
+import 'package:fyp_recipe/Recommendation/user_home_page.dart';
+import 'package:fyp_recipe/Recommendation/user_info_collect_thirdpage.dart';
 
-class UserChangeInfoPage2 extends StatefulWidget {
-  const UserChangeInfoPage2({super.key});
+class UserInfoPage2 extends StatefulWidget {
+  const UserInfoPage2({super.key});
 
   @override
-  UserChangeInfoPage2State createState() => UserChangeInfoPage2State();
+  UserInfoPage2State createState() => UserInfoPage2State();
 }
 
-class UserChangeInfoPage2State extends State<UserChangeInfoPage2> {
+class UserInfoPage2State extends State<UserInfoPage2> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -53,28 +55,7 @@ class UserChangeInfoPage2State extends State<UserChangeInfoPage2> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const UserProfilePage()),
-        );
-
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Successful!'),
-              content: const Text(
-                "Health Information Updated ✅",
-                style: TextStyle(fontSize: 16),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                  child: const Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
-                ),
-              ],
-            );
-          },
+          MaterialPageRoute(builder: (context) => const UserInfoPage3()),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -103,7 +84,7 @@ class UserChangeInfoPage2State extends State<UserChangeInfoPage2> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
+              child: Text('OK', style: TextStyle(color: Colors.indigo, fontSize: 16, fontWeight: FontWeight.bold),),
             ),
           ],
         );
@@ -201,7 +182,7 @@ class UserChangeInfoPage2State extends State<UserChangeInfoPage2> {
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const UserProfilePage()),
+                          MaterialPageRoute(builder: (context) => const UserHomePage()),
                         );
                       },
                       child: Text(
@@ -292,46 +273,86 @@ class UserChangeInfoPage2State extends State<UserChangeInfoPage2> {
                 SizedBox(height: 50),
 
                 // Buttons Row
-                Column(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          _saveHealthData();
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            // Gradient for the 3D look
-                            gradient: LinearGradient(
-                              colors: [Colors.indigo.shade200, Colors.indigo.shade400],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+                    // Back Button
+                    GestureDetector(
+                      onTap: () {
+                        // Navigate back to UserInfoPage1
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => UserInfoPage1()),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white, // Default background color
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.shade500,
+                              offset: Offset(5, 5),
+                              blurRadius: 10,
+                              spreadRadius: 1,
                             ),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              // Adding shadows for a deeper 3D effect
-                              BoxShadow(
-                                color: Colors.grey.shade500,
-                                offset: Offset(5, 5),
-                                blurRadius: 10,
-                                spreadRadius: 1,
-                              ),
-                              BoxShadow(
-                                color: Colors.white,
-                                offset: Offset(-5, -5),
-                                blurRadius: 10,
-                                spreadRadius: 1,
-                              ),
-                            ],
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                          child: Text(
-                            'Update',
-                            style: TextStyle(
+                            BoxShadow(
                               color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 20,
+                              offset: Offset(-5, -5),
+                              blurRadius: 10,
+                              spreadRadius: 1,
                             ),
+                          ],
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                        child: Text(
+                          'Back',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Save & Proceed Button
+                    GestureDetector(
+                      onTap: () {
+                        _saveHealthData();
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          // Gradient for the 3D look
+                          gradient: LinearGradient(
+                            colors: [Colors.indigo.shade200, Colors.indigo.shade400],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            // Adding shadows for a deeper 3D effect
+                            BoxShadow(
+                              color: Colors.grey.shade500,
+                              offset: Offset(5, 5),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: Offset(-5, -5),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                        child: Text(
+                          'Save & Proceed',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
                           ),
                         ),
                       ),

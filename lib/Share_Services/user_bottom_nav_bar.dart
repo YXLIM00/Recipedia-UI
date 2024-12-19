@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_recipe/user_home_page.dart';
-import 'package:fyp_recipe/user_mealplan_page.dart';
-import 'package:fyp_recipe/user_favourite_page.dart';
-import 'package:fyp_recipe/user_profile_page.dart';
-import 'package:fyp_recipe/user_search_page.dart';
+import 'package:fyp_recipe/Recommendation/user_home_page.dart';
+import 'package:fyp_recipe/Meal_Plan/user_mealplan_page.dart';
+import 'package:fyp_recipe/Favourite/user_favourite_page.dart';
+import 'package:fyp_recipe/User_Profile/user_profile_page.dart';
+import 'package:fyp_recipe/Search/user_search_page.dart';
 
 class UserBottomNavBar extends StatelessWidget {
   final int currentIndex;
