@@ -35,15 +35,15 @@ class UserDietaryRecommendation {
       String bmiStatus;
       if (bmi < 18.5) {
         bmiStatus = "Underweight";
-        tdee += 500;
+        tdee += 300;
       } else if (bmi >= 18.5 && bmi <= 24.9) {
         bmiStatus = "Healthy Weight";
       } else if (bmi >= 25.0 && bmi <= 29.9) {
         bmiStatus = "Overweight";
-        tdee -= 500;
+        tdee -= 300;
       } else {
         bmiStatus = "Obesity";
-        tdee -= 1000;
+        tdee -= 600;
       }
 
       // Round and update Firestore
