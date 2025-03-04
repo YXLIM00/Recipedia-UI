@@ -27,11 +27,11 @@ class UserInfoPage1State extends State<UserInfoPage1> {
   final TextEditingController _weightController = TextEditingController();
 
   final Map<String, double> activityFactors = {
-    "Sedentary \n(little/no exercise)": 1.2,
-    "Lightly Active \n(light exercise 1-3 days/week)": 1.375,
-    "Moderately Active \n(moderate exercise 3-5 days/week)": 1.55,
-    "Highly Active \n(heavy exercise 6-7 days/week)": 1.725,
-    "Extremely Active \n(athlete training/physical job)": 1.9,
+    "Sedentary \n(little or no exercise)": 1.2,
+    "Lightly Active \n(exercise 1-3 days/week)": 1.375,
+    "Moderately Active \n(exercise 3-5 days/week)": 1.55,
+    "Highly Active \n(exercise 6-7 days/week)": 1.725,
+    "Extremely Active \n(athlete training)": 1.9,
   };
 
   @override
@@ -537,6 +537,8 @@ class UserInfoPage1State extends State<UserInfoPage1> {
                           ],
                         ),
 
+
+                        // Page Title
                         SizedBox(height: 40),
                         Center(
                           child: Text(
@@ -550,8 +552,9 @@ class UserInfoPage1State extends State<UserInfoPage1> {
                           ),
                         ),
 
-                        SizedBox(height: 40),
+
                         // Sex Selection
+                        SizedBox(height: 40),
                         Text('Select your sex:', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
                         SizedBox(height: 10),
                         Row(
@@ -564,26 +567,29 @@ class UserInfoPage1State extends State<UserInfoPage1> {
                         ),
 
 
-                        SizedBox(height: 40),
                         // Age Input
+                        SizedBox(height: 40),
                         Text('Enter your age (1 to 120):', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
                         SizedBox(height: 10),
                         _buildNeumorphicAgeField(),
 
+
+                        // Height Input
                         SizedBox(height: 40),
-                        // Neumorphic Height Input
                         Text('Enter your height (cm):', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
                         SizedBox(height: 10),
                         _buildNeumorphicTextField(_heightController, "eg. 170.50", true),
 
+
+                        // Weight Input
                         SizedBox(height: 40),
-                        // Neumorphic Weight Input
                         Text('Enter your weight (kg):', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
                         SizedBox(height: 10),
                         _buildNeumorphicTextField(_weightController, "eg. 60.55", false),
 
-                        SizedBox(height: 40),
+
                         // Activity Factor Selection
+                        SizedBox(height: 40),
                         Text('Select your activity level:', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w900)),
                         SizedBox(height: 10),
                         Column(
