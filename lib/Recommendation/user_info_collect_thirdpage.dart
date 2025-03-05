@@ -80,7 +80,7 @@ class UserInfoPage3State extends State<UserInfoPage3> {
       try {
         await _firestore.collection('users').doc(user.uid).set({
           'diet_purpose': _selectedRadioValue, // Store as a single string
-          'allergies_preferences': _selectedAllergies, // Store as an array
+          'allergies': _selectedAllergies, // Store as an array
         }, SetOptions(merge: true));
 
         // Navigate to the next page after saving data

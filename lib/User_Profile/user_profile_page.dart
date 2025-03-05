@@ -22,7 +22,22 @@ class _UserProfilePageState extends State<UserProfilePage> {
     "Highly Active \n(exercise 6-7 days/week)": 1.725,
     "Extremely Active \n(athlete training/heavy physical job)": 1.9,
   };
-  
+
+  // List of available allergies preferences
+  final List<String> allergyOptions = [
+    "Dairy-Free",
+    "Gluten-Free",
+    "Red-Meat-Free",
+    "Pork-Free",
+    "Fish-Free",
+    "Shellfish-Free",
+    "Celery-Free",
+    "Peanut-Free",
+    "Vegetarian",
+    "Vegan",
+    "Alcohol-Free",
+  ];
+
   bool _isPersonalInfoExpanded = false;
   bool _isHealthInfoExpanded = false;
   bool _isDietaryInfoExpanded = false;
@@ -46,6 +61,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  //---------------------Personal Information Section---------------------------
   void _showGenderSelectionDialog(BuildContext context) {
     String? selectedGender = userData?['sex']; // Store the current value
 
@@ -502,6 +518,448 @@ class _UserProfilePageState extends State<UserProfilePage> {
       });
     }
   }
+  //---------------------Personal Information Section---------------------------
+
+
+  //---------------------Health Information Section-----------------------------
+  void _showBloodGlucoseLevelDialog(BuildContext context) {
+    String? selectedLevel = userData?['blood_glucose_level']; // Store the current value
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Select Blood Glucose Level"),
+              content: SizedBox(
+                height: 120, // Space for dropdown
+                child: Column(
+                  children: [
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton2<String>(
+                        value: selectedLevel,
+                        isExpanded: true,
+                        items: ["High", "Normal", "Low"].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedLevel = newValue;
+                          });
+                        },
+                        buttonStyleData: const ButtonStyleData(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          height: 50,
+                          width: double.infinity,
+                        ),
+                        dropdownStyleData: DropdownStyleData(
+                          maxHeight: 200, // Allow dropdown to expand fully downward
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext), // Close dialog
+                  child: Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    if (selectedLevel != null) {
+                      await _updateBloodGlucoseLevel(selectedLevel!);
+                      Navigator.pop(dialogContext); // Close dialog
+                    }
+                  },
+                  child: Text("Save"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+  Future<void> _updateBloodGlucoseLevel(String newLevel) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'blood_glucose_level': newLevel,
+      });
+      setState(() {
+        userData?['blood_glucose_level'] = newLevel; // Update local UI state
+      });
+    }
+  }
+
+  void _showBloodPressureLevelDialog(BuildContext context) {
+    String? selectedLevel = userData?['blood_pressure_level']; // Store current value
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Select Blood Pressure Level"),
+              content: SizedBox(
+                height: 120, // Space for dropdown
+                child: Column(
+                  children: [
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton2<String>(
+                        value: selectedLevel,
+                        isExpanded: true,
+                        items: ["High", "Normal", "Low"].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedLevel = newValue;
+                          });
+                        },
+                        buttonStyleData: const ButtonStyleData(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          height: 50,
+                          width: double.infinity,
+                        ),
+                        dropdownStyleData: DropdownStyleData(
+                          maxHeight: 200, // Allow dropdown to expand fully downward
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext), // Close dialog
+                  child: Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    if (selectedLevel != null) {
+                      await _updateBloodPressureLevel(selectedLevel!);
+                      Navigator.pop(dialogContext); // Close dialog
+                    }
+                  },
+                  child: Text("Save"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+  Future<void> _updateBloodPressureLevel(String newLevel) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'blood_pressure_level': newLevel,
+      });
+      setState(() {
+        userData?['blood_pressure_level'] = newLevel; // Update local UI state
+      });
+    }
+  }
+
+  void _showBloodCholesterolLevelDialog(BuildContext context) {
+    String? selectedLevel = userData?['blood_cholesterol_level']; // Store current value
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Select Blood Cholesterol Level"),
+              content: SizedBox(
+                height: 120, // Space for dropdown
+                child: Column(
+                  children: [
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton2<String>(
+                        value: selectedLevel,
+                        isExpanded: true,
+                        items: ["High", "Normal"].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedLevel = newValue;
+                          });
+                        },
+                        buttonStyleData: const ButtonStyleData(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          height: 50,
+                          width: double.infinity,
+                        ),
+                        dropdownStyleData: DropdownStyleData(
+                          maxHeight: 200, // Allow dropdown to expand fully downward
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext), // Close dialog
+                  child: Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    if (selectedLevel != null) {
+                      await _updateBloodCholesterolLevel(selectedLevel!);
+                      Navigator.pop(dialogContext); // Close dialog
+                    }
+                  },
+                  child: Text("Save"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+  Future<void> _updateBloodCholesterolLevel(String newLevel) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'blood_cholesterol_level': newLevel,
+      });
+      setState(() {
+        userData?['blood_cholesterol_level'] = newLevel; // Update local UI state
+      });
+    }
+  }
+
+  void _showDiabetesDialog(BuildContext context) {
+    String? selectedDiabetes = userData?['diabetes']; // Store current value
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Select Diabetes Status"),
+              content: SizedBox(
+                height: 120, // Space for dropdown
+                child: Column(
+                  children: [
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton2<String>(
+                        value: selectedDiabetes,
+                        isExpanded: true,
+                        items: ["Yes", "No"].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedDiabetes = newValue;
+                          });
+                        },
+                        buttonStyleData: const ButtonStyleData(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          height: 50,
+                          width: double.infinity,
+                        ),
+                        dropdownStyleData: DropdownStyleData(
+                          maxHeight: 200, // Allow dropdown to expand fully downward
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext), // Close dialog
+                  child: Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    if (selectedDiabetes != null) {
+                      await _updateDiabetesStatus(selectedDiabetes!);
+                      Navigator.pop(dialogContext); // Close dialog
+                    }
+                  },
+                  child: Text("Save"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+  Future<void> _updateDiabetesStatus(String newStatus) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'diabetes': newStatus,
+      });
+      setState(() {
+        userData?['diabetes'] = newStatus; // Update local UI state
+      });
+    }
+  }
+  //---------------------Health Information Section-----------------------------
+
+  //---------------------Dietary Information Section-----------------------------
+  void _showDietPurposeDialog(BuildContext context) {
+    String? selectedPurpose = userData?['diet_purpose']; // Store current value
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Select Diet Purpose"),
+              content: SizedBox(
+                height: 120, // Space for dropdown
+                child: Column(
+                  children: [
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton2<String>(
+                        value: selectedPurpose,
+                        isExpanded: true,
+                        items: ["Maintain Health", "Gain Muscle", "Lose Weight"]
+                            .map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedPurpose = newValue;
+                          });
+                        },
+                        buttonStyleData: const ButtonStyleData(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          height: 50,
+                          width: double.infinity,
+                        ),
+                        dropdownStyleData: DropdownStyleData(
+                          maxHeight: 200, // Allow dropdown to expand fully downward
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext), // Close dialog
+                  child: Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    if (selectedPurpose != null) {
+                      await _updateDietPurpose(selectedPurpose!);
+                      Navigator.pop(dialogContext); // Close dialog
+                    }
+                  },
+                  child: Text("Save"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+  Future<void> _updateDietPurpose(String newPurpose) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'diet_purpose': newPurpose,
+      });
+      setState(() {
+        userData?['diet_purpose'] = newPurpose; // Update local UI state
+      });
+    }
+  }
+
+  void _showAllergiesDialog(BuildContext context) {
+    List<String> selectedAllergies = List<String>.from(userData?['allergies'] ?? []);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Select Allergies"),
+              content: SingleChildScrollView(
+                child: Column(
+                  children: allergyOptions.map((String allergy) {
+                    return CheckboxListTile(
+                      title: Text(allergy),
+                      value: selectedAllergies.contains(allergy),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            selectedAllergies.add(allergy);
+                          } else {
+                            selectedAllergies.remove(allergy);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext), // Close dialog
+                  child: Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    await _updateUserAllergies(selectedAllergies);
+                    Navigator.pop(dialogContext); // Close dialog
+                  },
+                  child: Text("Save"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+  Future<void> _updateUserAllergies(List<String> newAllergies) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'allergies': newAllergies,
+      });
+      setState(() {
+        userData?['allergies'] = newAllergies; // Update local UI state
+      });
+    }
+  }
+  //---------------------Dietary Information Section-----------------------------
 
 
   @override
@@ -542,7 +1000,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ),
             ),
         
-        
             // Personal Information Section
             SizedBox(height: 40),
             Card(
@@ -556,7 +1013,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Personal Information Text
+                    // Personal Information Section Title
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -696,7 +1153,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Section Title with Arrow Icon
+                    // Health Information Section Title
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -726,29 +1183,77 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       ],
                     ),
                     if (_isHealthInfoExpanded) ...[
+
+                      // Blood Glucose Level Display & Edit
                       const SizedBox(height: 10),
-                      Text(
-                        "Blood Glucose Level:  ${userData?['blood_glucose_level'] ?? 'Not available'}",
-                        style: const TextStyle(
-                            fontSize: 16, color: Colors.black),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Blood Glucose Level:  ${userData?['blood_glucose_level'] ?? 'Not available'}",
+                            style: const TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              _showBloodGlucoseLevelDialog(context);
+                            },
+                            icon: Icon(Icons.edit),
+                          ),
+                        ],
                       ),
+
+                      // Blood Pressure Level Display & Edit
                       const SizedBox(height: 10),
-                      Text(
-                        "Blood Pressure Level:  ${userData?['blood_pressure_level'] ?? 'Not available'}",
-                        style: const TextStyle(
-                            fontSize: 16, color: Colors.black),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Blood Pressure Level:  ${userData?['blood_pressure_level'] ?? 'Not available'}",
+                            style: const TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              _showBloodPressureLevelDialog(context);
+                            },
+                            icon: Icon(Icons.edit),
+                          ),
+                        ],
                       ),
+
+                      // Blood Cholesterol Level Display & Edit
                       const SizedBox(height: 10),
-                      Text(
-                        "Blood Cholesterol Level:  ${userData?['blood_cholesterol_level'] ?? 'Not available'}",
-                        style: const TextStyle(
-                            fontSize: 16, color: Colors.black),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Blood Cholesterol Level:  ${userData?['blood_cholesterol_level'] ?? 'Not available'}",
+                            style: const TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              _showBloodCholesterolLevelDialog(context);
+                            },
+                            icon: Icon(Icons.edit),
+                          ),
+                        ],
                       ),
+
+                      // Diabetes Display & Edit
                       const SizedBox(height: 10),
-                      Text(
-                        "Diabetes:  ${userData?['diabetes'] ?? 'Not available'}",
-                        style: const TextStyle(
-                            fontSize: 16, color: Colors.black),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Diabetes:  ${userData?['diabetes'] ?? 'Not available'}",
+                            style: const TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              _showDiabetesDialog(context);
+                            },
+                            icon: Icon(Icons.edit),
+                          ),
+                        ],
                       ),
                     ],
                   ],
@@ -769,7 +1274,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Section Title with Arrow Icon
+                    // Dietary Information Section Title
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -799,16 +1304,69 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       ],
                     ),
                     if (_isDietaryInfoExpanded) ...[
+
+                      // Diet Purpose Display & Edit
                       const SizedBox(height: 10),
-                      Text(
-                        "Diet Purpose:  ${userData?['diet_purpose'] ?? 'Not available'}",
-                        style: const TextStyle(
-                            fontSize: 16, color: Colors.black),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Diet Purpose:  ${userData?['diet_purpose'] ?? 'Not available'}",
+                            style: const TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              _showDietPurposeDialog(context);
+                            },
+                            icon: Icon(Icons.edit),
+                          ),
+                        ],
                       ),
+
+                      // Allergies Display & Edit
                       const SizedBox(height: 10),
-                      Text(
-                        "Allergies:  ${userData?['allergies_preferences'] != null && (userData?['allergies_preferences'] as List).isNotEmpty ? (userData?['allergies_preferences'] as List).join(', ') : 'Not available'}",
-                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start, // Align everything at the top
+                        children: [
+                          // "Allergies:" Text (Keeps it aligned with first tag)
+                          Padding(
+                            padding: EdgeInsets.only(top: 10.0), // Slightly adjust to align with the first tag
+                            child: Text(
+                              "Allergies:",
+                              style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+
+                          const SizedBox(width: 10), // Add small spacing between text and tags
+
+                          // Wrap for Allergy Tags (Ensures they start from the first line)
+                          Expanded(
+                            child: Wrap(
+                              spacing: 2.0, // Space between tags
+                              runSpacing: 2.0, // Space between lines
+                              children: [
+                                if (userData?['allergies'] != null && (userData!['allergies'] as List).isNotEmpty)
+                                  ...(userData!['allergies'] as List).map<Widget>((allergy) {
+                                    return Chip(
+                                      label: Text(allergy, style: TextStyle(color: Colors.white)),
+                                      backgroundColor: Colors.red,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                    );
+                                  }).toList()
+                                else
+                                  Text("None", style: TextStyle(fontSize: 16, color: Colors.black)),
+                              ],
+                            ),
+                          ),
+
+                          // Edit Button (Keeps it aligned with first row)
+                          IconButton(
+                            onPressed: () {
+                              _showAllergiesDialog(context);
+                            },
+                            icon: Icon(Icons.edit),
+                          ),
+                        ],
                       ),
                     ],
                   ],
