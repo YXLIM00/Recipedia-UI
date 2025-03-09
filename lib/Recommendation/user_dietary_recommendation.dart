@@ -102,7 +102,7 @@ class UserDietaryRecommendation {
       if(bloodGlucose.toLowerCase() == "low"){
         customCautions.addAll([
           "Eat small meals/snacks every 3 hours.",
-          "Always prepare fast-acting carbohydrates such as honey sticks, glucose tablets/gels in case hypoglycemia symptoms occurs."
+          "Always prepare fast-acting carbohydrates (eg. honey sticks, glucose tablets/gels) in case hypoglycemia symptoms occurs."
         ]);
       }
 

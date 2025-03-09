@@ -210,7 +210,7 @@ class _UserHomePageState extends State<UserHomePage> {
               ),
             ),
 
-            // Recipes with diet labels Section
+            // Recipes with Diet Labels Section
             SizedBox(height: 20),
             Card(
               shape: RoundedRectangleBorder(
@@ -259,7 +259,7 @@ class _UserHomePageState extends State<UserHomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: (userData!['custom_dietLabels'] as List<dynamic>)
                               .map((label) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
                             child: Text(
                               "- $label",
                               style: const TextStyle(
@@ -281,7 +281,7 @@ class _UserHomePageState extends State<UserHomePage> {
               ),
             ),
 
-            // Recipes with health labels Section
+            // Recipes with Health Labels Section
             SizedBox(height: 20),
             Card(
               shape: RoundedRectangleBorder(
@@ -324,13 +324,13 @@ class _UserHomePageState extends State<UserHomePage> {
                     ),
                     if (_isHealthLabelsExpanded) ...[
                       const SizedBox(height: 10),
-                      // Display diet labels list
+                      // Display health labels list
                       if (userData?['custom_healthLabels']?.isNotEmpty ?? false) ...[
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: (userData!['custom_healthLabels'] as List<dynamic>)
                               .map((label) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
                             child: Text(
                               "- $label",
                               style: const TextStyle(
@@ -395,13 +395,13 @@ class _UserHomePageState extends State<UserHomePage> {
                     ),
                     if (_isHealthyExpanded) ...[
                       const SizedBox(height: 10),
-                      // Display diet labels list
+                      // Display healthy food list
                       if (userData?['custom_helpful_food']?.isNotEmpty ?? false) ...[
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: (userData!['custom_helpful_food'] as List<dynamic>)
                               .map((label) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
                             child: Text(
                               "- $label",
                               style: const TextStyle(
@@ -466,13 +466,13 @@ class _UserHomePageState extends State<UserHomePage> {
                     ),
                     if (_isHarmfulExpanded) ...[
                       const SizedBox(height: 10),
-                      // Display diet labels list
+                      // Display harmful food list
                       if (userData?['custom_harmful_food']?.isNotEmpty ?? false) ...[
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: (userData!['custom_harmful_food'] as List<dynamic>)
                               .map((label) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
                             child: Text(
                               "- $label",
                               style: const TextStyle(
@@ -537,13 +537,13 @@ class _UserHomePageState extends State<UserHomePage> {
                     ),
                     if (_isSafetyExpanded) ...[
                       const SizedBox(height: 10),
-                      // Display diet labels list
+                      // Display safety advice list
                       if (userData?['custom_cautions']?.isNotEmpty ?? false) ...[
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: (userData!['custom_cautions'] as List<dynamic>)
                               .map((label) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
                             child: Text(
                               "- $label",
                               style: const TextStyle(

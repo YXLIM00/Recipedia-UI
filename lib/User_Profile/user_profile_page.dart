@@ -1333,7 +1333,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                             padding: EdgeInsets.only(top: 10.0), // Slightly adjust to align with the first tag
                             child: Text(
                               "Allergies:",
-                              style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold),
+                              style: TextStyle(fontSize: 16, color: Colors.black),
                             ),
                           ),
 
@@ -1348,10 +1348,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                 if (userData?['allergies'] != null && (userData!['allergies'] as List).isNotEmpty)
                                   ...(userData!['allergies'] as List).map<Widget>((allergy) {
                                     return Chip(
-                                      label: Text(allergy, style: TextStyle(color: Colors.white)),
-                                      backgroundColor: Colors.red,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                      label: Text(allergy, style: TextStyle(color: Colors.white)), // Text color
+                                      backgroundColor: Colors.redAccent[400], // Background color
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20), // Rounded corners
+                                        side: BorderSide(color: Colors.red, width: 2), // Border color & thickness
+                                      ),
                                     );
+
                                   }).toList()
                                 else
                                   Text("None", style: TextStyle(fontSize: 16, color: Colors.black)),
