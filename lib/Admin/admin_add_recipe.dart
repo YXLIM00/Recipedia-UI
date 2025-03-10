@@ -18,7 +18,7 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
   bool isLoading = true;
 
   // Hardcoded diet and health filters
-  final List<String> availableDiets = [
+  final List<String> availableDietLabels = [
     'balanced',
     'high-protein',
     'high-fiber',
@@ -45,7 +45,7 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
   ];
 
   // Selected filters
-  List<String> selectedDiets = [];
+  List<String> selectedDietLabels = [];
   List<String> selectedHealthLabels = [];
 
   @override
@@ -60,7 +60,7 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
       // Pass diet and health filters to the API method
       List<dynamic> fetchedRecipes = await recipeService.edamamFetchRecipes(
         searchQuery,
-        diets: selectedDiets,
+        diets: selectedDietLabels,
         health: selectedHealthLabels,
       );
       setState(() {
@@ -97,18 +97,18 @@ class AdminAddRecipeState extends State<AdminAddRecipe> {
                     // Diet Filter Checkboxes
                     Text('Diet Labels:', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20)),
                     Column(
-                      children: availableDiets.map((diet) {
+                      children: availableDietLabels.map((diet) {
                         return CheckboxListTile(
                           activeColor: Colors.indigo,
                           checkColor: Colors.white,
                           title: Text(diet, style: TextStyle(color: Colors.black)),
-                          value: selectedDiets.contains(diet),
+                          value: selectedDietLabels.contains(diet),
                           onChanged: (bool? value) {
                             setState(() {
                               if (value == true) {
-                                selectedDiets.add(diet);
+                                selectedDietLabels.add(diet);
                               } else {
-                                selectedDiets.remove(diet);
+                                selectedDietLabels.remove(diet);
                               }
                             });
                           },
