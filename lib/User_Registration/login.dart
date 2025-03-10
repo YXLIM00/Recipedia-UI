@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fyp_recipe/Edamam_Services/edamam_recipe_image_update.dart';
 import 'package:fyp_recipe/Share_Services/background_image_container.dart';
 import 'package:fyp_recipe/User_Registration/forgot_password.dart';
 
@@ -26,6 +27,13 @@ class _LoginPageState extends State<LoginPage> {
     passwordController.dispose();
     super.dispose();
   }
+
+  @override
+  void initState() {
+    super.initState();
+    RecipeImagePreloader.checkAndUpdateRecipeImages();
+  }
+
 
   bool validateEmail(String email) {
     // Check if empty

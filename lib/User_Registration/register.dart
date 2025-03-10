@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fyp_recipe/Edamam_Services/edamam_recipe_image_update.dart';
 import 'package:fyp_recipe/Share_Services/background_image_container.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -32,6 +33,13 @@ class _RegisterPageState extends State<RegisterPage> {
     confirmPasswordController.dispose();
     super.dispose();
   }
+
+  @override
+  void initState() {
+    super.initState();
+    RecipeImagePreloader.checkAndUpdateRecipeImages();
+  }
+
 
   bool validateUsername(String username) {
     if (username.isEmpty) {

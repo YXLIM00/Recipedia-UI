@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fyp_recipe/Admin/admin_add_recipe.dart';
 import 'package:fyp_recipe/Admin/admin_delete_recipe.dart';
 import 'package:fyp_recipe/Admin/admin_edit_recipe.dart';
+import 'package:fyp_recipe/Edamam_Services/edamam_recipe_image_update.dart';
 import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
 
 class AdminHomePage extends StatefulWidget {
@@ -14,6 +15,13 @@ class AdminHomePage extends StatefulWidget {
 
 class _AdminHomePageState extends State<AdminHomePage> {
   final admin = FirebaseAuth.instance.currentUser!;
+
+  @override
+  void initState() {
+    super.initState();
+    RecipeImagePreloader.checkAndUpdateRecipeImages();
+  }
+
 
   @override
   Widget build(BuildContext context) {

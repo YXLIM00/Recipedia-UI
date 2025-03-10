@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fyp_recipe/Edamam_Services/edamam_recipe_image_update.dart';
 import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
 import 'package:fyp_recipe/Share_Services/user_bottom_nav_bar.dart';
 import 'package:fyp_recipe/Recommendation/user_dietary_recommendation.dart';
@@ -31,6 +32,7 @@ class _UserHomePageState extends State<UserHomePage> {
     super.initState();
     userId = FirebaseAuth.instance.currentUser!.uid;
     loadDietaryRecommendations();
+    RecipeImagePreloader.checkAndUpdateRecipeImages();
   }
 
   Future<void> loadDietaryRecommendations() async {
