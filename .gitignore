@@ -1,6 +1,6 @@
 # Ignore sensitive files
 lib/Edamam_Services/edamam_recipe_image.dart
-lib/Edamam_Services/edamam_recipe_service.dart
+lib/Edamam_Services/edamam_recipe_search.dart
 lib/User_Registration/auth_state_change.dart
 
 # Ignore environment variables
