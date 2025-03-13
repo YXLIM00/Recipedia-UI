@@ -76,7 +76,7 @@ class _UserFavouritePageState extends State<UserFavouritePage> {
           SizedBox(height: 20),
           Center(
             child: Text(
-              'Favourites',
+              'Favourite Recipes',
               style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.indigo),
             ),
           ),
