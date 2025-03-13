@@ -135,24 +135,33 @@ class UserMealplanPageState extends State<UserMealplanPage> {
       showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
-          return ListView.builder(
-            itemCount: availableRecipes.length,
-            itemBuilder: (context, index) {
-              final recipe = availableRecipes[index];
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    mealPlan[mealType] = (mealPlan[mealType] ?? [])..add(recipe);
-                    calculateTotalCalories(); // Recalculate total calories after adding
-                  });
-                  Navigator.pop(context); // Close the pop-up
-                },
-                child: buildRecipeCard(recipe, mealType, showDeleteButton: false), // Hide delete button here
-              );
-            },
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8), // Adds spacing at the top
+              Expanded(
+                child: ListView.builder(
+                  itemCount: availableRecipes.length,
+                  itemBuilder: (context, index) {
+                    final recipe = availableRecipes[index];
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          mealPlan[mealType] = (mealPlan[mealType] ?? [])..add(recipe);
+                          calculateTotalCalories();
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: buildRecipeCard(recipe, mealType, showDeleteButton: false),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       );
+
     }
   }
 
@@ -164,18 +173,19 @@ class UserMealplanPageState extends State<UserMealplanPage> {
 
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(8.0),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
+            const SizedBox(width: 8),
             ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
               child: Image.network(
                 image,
-                width: 50,
-                height: 50,
+                width: 80,
+                height: 80,
                 fit: BoxFit.cover,
               ),
             ),
@@ -186,13 +196,13 @@ class UserMealplanPageState extends State<UserMealplanPage> {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "${calories.toStringAsFixed(1)} cal",
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    "${calories.toStringAsFixed(1)} cal/serving",
+                    style: TextStyle(fontSize: 16, color: Colors.grey[900]),
                   ),
                 ],
               ),
@@ -201,12 +211,34 @@ class UserMealplanPageState extends State<UserMealplanPage> {
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
                 onPressed: () {
-                  setState(() {
-                    mealPlan[mealType]?.remove(recipe);
-                    calculateTotalCalories(); // Recalculate total calories
-                  });
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("Confirm Deletion"),
+                        content: const Text("Are you sure you want to remove this recipe from your meal plan?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(), // Cancel
+                            child: const Text("Cancel", style: TextStyle(color: Colors.indigo),),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                mealPlan[mealType]?.remove(recipe);
+                                calculateTotalCalories(); // Recalculate total calories
+                              });
+                              Navigator.of(context).pop(); // Close dialog after deletion
+                            },
+                            child: const Text("Delete", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
               ),
+
           ],
         ),
       ),
@@ -416,7 +448,7 @@ class UserMealplanPageState extends State<UserMealplanPage> {
                 ),
                 padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                 child: Text(
-                  'Update',
+                  'Save',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
