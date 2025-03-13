@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_recipe/Share_Services/user_bottom_nav_bar.dart';
 import 'package:fyp_recipe/Recommendation/user_recommended_recipe_details.dart';
+import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
 
 class UserSearchPage extends StatefulWidget {
   const UserSearchPage({super.key});
@@ -161,10 +162,27 @@ class _UserSearchPageState extends State<UserSearchPage> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Recipedia', style: TextStyle(color: Colors.white)),
+          title: Text(
+            'Recipedia',
+            style: TextStyle(color: Colors.white),
+          ),
           centerTitle: true,
           backgroundColor: Colors.black,
-          iconTheme: const IconThemeData(color: Colors.white),
+          iconTheme: IconThemeData(color: Colors.white),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              color: Colors.white,
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                if (mounted) {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const AuthStateChange()),
+                  );
+                }
+              },
+            ),
+          ],
         ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
