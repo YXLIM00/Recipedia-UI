@@ -407,61 +407,58 @@ class UserMealplanPageState extends State<UserMealplanPage> {
                       ),
                     ],
                   ),
+                  SizedBox(height: 20),
+                  // Neumorphism Save Button inside scrollable area
+                  Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        saveMealPlan();
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          // Gradient for the 3D look
+                          gradient: LinearGradient(
+                            colors: [Colors.indigo.shade200, Colors.indigo.shade400],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            // Adding shadows for a deeper 3D effect
+                            BoxShadow(
+                              color: Colors.grey.shade500,
+                              offset: Offset(5, 5),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                            BoxShadow(
+                              color: Colors.white,
+                              offset: Offset(-5, -5),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                        child: const Text(
+                          'Save',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
                 ],
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Center(
-            child: GestureDetector(
-              onTap: () {
-                saveMealPlan();
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  // Gradient for the 3D look
-                  gradient: LinearGradient(
-                    colors: [Colors.indigo.shade200, Colors.indigo.shade400],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    // Adding shadows for a deeper 3D effect
-                    BoxShadow(
-                      color: Colors.grey.shade500,
-                      offset: Offset(5, 5),
-                      blurRadius: 10,
-                      spreadRadius: 1,
-                    ),
-                    BoxShadow(
-                      color: Colors.white,
-                      offset: Offset(-5, -5),
-                      blurRadius: 10,
-                      spreadRadius: 1,
-                    ),
-                  ],
-                ),
-                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                child: Text(
-                  'Save',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 20.0),
-          UserBottomNavBar(currentIndex: 3),
-        ],
-      ),
+      bottomNavigationBar: const UserBottomNavBar(currentIndex: 2),
     );
   }
 }
