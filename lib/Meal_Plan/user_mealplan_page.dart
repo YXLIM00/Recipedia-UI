@@ -458,7 +458,7 @@ class UserMealplanPageState extends State<UserMealplanPage> {
           ],
         ),
       ),
-      bottomNavigationBar: const UserBottomNavBar(currentIndex: 2),
+      bottomNavigationBar: const UserBottomNavBar(currentIndex: 3),
     );
   }
 }
