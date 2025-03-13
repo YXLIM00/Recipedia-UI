@@ -23,6 +23,7 @@ class UserMealplanPageState extends State<UserMealplanPage> {
     'Dinner': [],
     'Snacks': [],
   };
+
   double totalCalories = 0;
   double recommendedCaloriesIntake = 0;
 
@@ -31,6 +32,16 @@ class UserMealplanPageState extends State<UserMealplanPage> {
     super.initState();
     fetchUserRecommendedCalories();
     fetchSavedMealPlan();
+  }
+
+  void fetchUserRecommendedCalories() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId != null) {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      setState(() {
+        recommendedCaloriesIntake = (userDoc['recommended_calories_intake'] ?? 0).toDouble();
+      });
+    }
   }
 
   void fetchSavedMealPlan() async {
@@ -47,14 +58,37 @@ class UserMealplanPageState extends State<UserMealplanPage> {
         if (mealPlanDoc.exists) {
           final data = mealPlanDoc.data();
           if (data != null && data['mealPlan'] != null) {
+            Map<String, List<Map<String, dynamic>>> updatedMealPlan = {
+              'Breakfast': [],
+              'Lunch': [],
+              'Dinner': [],
+              'Snacks': [],
+            };
+
+            // Fetch recipe details for each meal type
+            for (String mealType in updatedMealPlan.keys) {
+              List<dynamic> recipes = data['mealPlan'][mealType] ?? [];
+              for (var recipe in recipes) {
+                String recipeLabel = recipe;  // Directly use recipe as a string
+                // Fetch recipe details from the recipes collection
+                var recipeDoc = await _firestore
+                    .collection('recipes')
+                    .where('label', isEqualTo: recipeLabel)
+                    .get();
+
+                if (recipeDoc.docs.isNotEmpty) {
+                  var recipeData = recipeDoc.docs.first.data();
+                  updatedMealPlan[mealType]!.add({
+                    'label': recipeLabel,
+                    'image': recipeData['image'] ?? 'https://via.placeholder.com/50',
+                    'caloriesPerServing': (recipeData['caloriesPerServing'] ?? 0).toDouble(),
+                  });
+                }
+              }
+            }
+
             setState(() {
-              // Update the mealPlan map
-              mealPlan = {
-                'Breakfast': List<Map<String, dynamic>>.from(data['mealPlan']['Breakfast'] ?? []),
-                'Lunch': List<Map<String, dynamic>>.from(data['mealPlan']['Lunch'] ?? []),
-                'Dinner': List<Map<String, dynamic>>.from(data['mealPlan']['Dinner'] ?? []),
-                'Snacks': List<Map<String, dynamic>>.from(data['mealPlan']['Snacks'] ?? []),
-              };
+              mealPlan = updatedMealPlan;
             });
             calculateTotalCalories(); // Recalculate total calories
           }
@@ -87,18 +121,6 @@ class UserMealplanPageState extends State<UserMealplanPage> {
         totalCalories = 0; // Reset total calories as well
       });
       fetchSavedMealPlan(); // Fetch the saved meal plan for the newly selected date
-    }
-  }
-
-
-
-  void fetchUserRecommendedCalories() async {
-    final userId = _auth.currentUser?.uid;
-    if (userId != null) {
-      final userDoc = await _firestore.collection('users').doc(userId).get();
-      setState(() {
-        recommendedCaloriesIntake = (userDoc['recommended_calories_intake'] ?? 0).toDouble();
-      });
     }
   }
 
@@ -164,7 +186,6 @@ class UserMealplanPageState extends State<UserMealplanPage> {
 
     }
   }
-
 
   Widget buildRecipeCard(Map<String, dynamic> recipe, String mealType, {bool showDeleteButton = true}) {
     final label = recipe['label'] ?? 'Unnamed Recipe';
@@ -258,13 +279,14 @@ class UserMealplanPageState extends State<UserMealplanPage> {
             .set({
           'date': selectedDate.toIso8601String(),
           'mealPlan': {
-            'Breakfast': mealPlan['Breakfast'] ?? [],
-            'Lunch': mealPlan['Lunch'] ?? [],
-            'Dinner': mealPlan['Dinner'] ?? [],
-            'Snacks': mealPlan['Snacks'] ?? [],
+            'Breakfast': mealPlan['Breakfast']?.map((recipe) => recipe['label']).toList() ?? [],
+            'Lunch': mealPlan['Lunch']?.map((recipe) => recipe['label']).toList() ?? [],
+            'Dinner': mealPlan['Dinner']?.map((recipe) => recipe['label']).toList() ?? [],
+            'Snacks': mealPlan['Snacks']?.map((recipe) => recipe['label']).toList() ?? [],
           },
           'totalCalories': totalCalories,
         });
+
         // Show a success message in an AlertDialog
         showDialog(
           context: context,
@@ -280,23 +302,25 @@ class UserMealplanPageState extends State<UserMealplanPage> {
                   onPressed: () {
                     Navigator.of(context).pop(); // Close the dialog
                   },
-                  child: const Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),),
+                  child: const Text('OK', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
                 ),
               ],
             );
           },
         );
-
       } catch (e) {
         // Show an error message
-        print(e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error saving meal plan: $e")),
+        );
       }
     } else {
       // Show a message if the user is not logged in
-      print("User not logged in!");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("User not logged in!")),
+      );
     }
   }
-
 
 
   @override
