@@ -238,7 +238,7 @@ class _UserSearchPageState extends State<UserSearchPage> {
 
                       // Horizontal Scroll View for Recipes
                       SizedBox(
-                        height: 240, // Increase height slightly to fit the bigger image and text
+                        height: 230, // Increase height slightly to fit the bigger image and text
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           itemCount: recipes.length,
@@ -290,10 +290,11 @@ class _UserSearchPageState extends State<UserSearchPage> {
                                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                       child: Text(
                                         recipe['label'],
+                                        textAlign: TextAlign.center,
                                         maxLines: 3, // Allow 3 lines for long names
                                         overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 15,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black,
                                         ),

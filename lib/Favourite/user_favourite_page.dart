@@ -97,11 +97,12 @@ class _UserFavouritePageState extends State<UserFavouritePage> {
 
                 final recipes = snapshot.data!;
                 return GridView.builder(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(16.0),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // Display 2 items per row.
-                    crossAxisSpacing: 20.0,
-                    mainAxisSpacing: 20.0,
+                    crossAxisCount: 2, // 2 items per row
+                    crossAxisSpacing: 8.0,
+                    mainAxisSpacing: 16.0,
+                    mainAxisExtent: 230, // Set fixed card height
                   ),
                   itemCount: recipes.length,
                   itemBuilder: (context, index) {
@@ -115,45 +116,45 @@ class _UserFavouritePageState extends State<UserFavouritePage> {
                         );
                       },
                       child: Container(
+                        margin: const EdgeInsets.all(4.0),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12.0),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey,
-                              spreadRadius: 2,
-                              blurRadius: 4,
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4.0,
+                              spreadRadius: 2.0,
                             ),
                           ],
                         ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Fixed height for the image
                             ClipRRect(
                               borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(12.0),
                               ),
                               child: Image.network(
-                                recipe['image'], // URL of the recipe image.
-                                height: 140, // Fixed height for the image
-                                width: double.infinity,
+                                recipe['image'],
+                                height: 140,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) =>
                                 const Icon(Icons.broken_image),
                               ),
                             ),
-                            Expanded(
+                            Padding(
+                              padding: const EdgeInsets.all(4.0),
                               child: Text(
-                                recipe['label'], // Recipe name.
+                                recipe['label'],
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 16.0,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 textAlign: TextAlign.center,
-                                maxLines: 3, // Limit label to 3 lines
-                                overflow: TextOverflow.ellipsis, // Ellipsis when the text overflows
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -162,6 +163,7 @@ class _UserFavouritePageState extends State<UserFavouritePage> {
                     );
                   },
                 );
+
               },
             ),
           ),
