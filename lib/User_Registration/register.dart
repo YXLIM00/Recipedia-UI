@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_recipe/Edamam_Services/edamam_recipe_image_update.dart';
 import 'package:fyp_recipe/Share_Services/background_image_container.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fyp_recipe/User_Registration/auth_bloc.dart';
 
 class RegisterPage extends StatefulWidget {
   final VoidCallback showLoginPage; //create function to toggle pages
@@ -193,194 +193,158 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
 
-  // Register function
-  Future register() async {
-    final isValidUsername = validateUsername(usernameController.text.trim());
-    final isValidEmail = await validateEmail(emailController.text.trim());
-    final isValidPassword = validatePassword(passwordController.text.trim());
-    final isValidConfirmPassword = validateConfirmPassword(confirmPasswordController.text.trim());
-
-    if (isValidEmail && isValidUsername && isValidPassword && isValidConfirmPassword) {
-      try {
-        // Create user with Firebase Authentication
-        UserCredential userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
-        );
-
-        // Add user details to Firestore with UID as document ID
-        await addUserDetails(
-          userCredential.user!.uid, // UID of the newly created user
-          usernameController.text.trim(), // Get username from the input field
-          emailController.text.trim(), // Get email from the input field
-        );
-
-        // Navigate to the next page (e.g., HomePage)
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            content: Text("✅ Account Registration Successful!"),
-          ),
-        );
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'email-already-in-use') {
-          setState(() {
-            emailError = "This email is already registered. \nPlease use another email.";
-          });
-        } else {
-          print(e);
-          // Handle other registration errors
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              content: Text("❌ Account Registration Failed! \nPlease check your credentials again"),
-            ),
-          );
-        }
-      }
-    }
-  }
-
-
-
-  // Add user details to Firestore with UID as document ID
-  Future addUserDetails(String uid, String username, String email) async {
-    await FirebaseFirestore.instance.collection('users').doc(uid).set({
-      'username': username,
-      'email': email,
-      'role': 'user', // Default role as 'user'
-      'saved_recipes': [],
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BackgroundContainer(
-        child: SafeArea(
-          child: Center(
-            child: GestureDetector(
-              onTap: () {
-                // Unfocus the text field and hide the keyboard when tapping outside
-                FocusScope.of(context).unfocus();
-              },
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    //Welcome!
-                    const SizedBox(height: 50.0),
-                    const Text(
-                      'Welcome!',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 40,
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      child: Scaffold(
+        body: BackgroundContainer(
+          child: SafeArea(
+            child: Center(
+              child: GestureDetector(
+                onTap: () {
+                  // Unfocus the text field and hide the keyboard when tapping outside
+                  FocusScope.of(context).unfocus();
+                },
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      //Welcome!
+                      const SizedBox(height: 50.0),
+                      const Text(
+                        'Welcome!',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 40,
+                        ),
                       ),
-                    ),
-
-                    //Register your details below
-                    const SizedBox(height: 10.0),
-                    const Text(
-                      'Register your details below',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 26,
+      
+                      //Register your details below
+                      const SizedBox(height: 10.0),
+                      const Text(
+                        'Register your details below',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 26,
+                        ),
                       ),
-                    ),
-
-                    // Username TextField
-                    _buildTextField(
-                      label: 'Username',
-                      controller: usernameController,
-                      errorText: usernameError,
-                      validator: validateUsername,
-                    ),
-                    // Email TextField
-                    _buildTextField(
-                      label: 'Email',
-                      controller: emailController,
-                      errorText: emailError,
-                      validator: validateEmail,
-                    ),
-                    // Password TextField
-                    _buildTextField(
-                      label: 'Password',
-                      controller: passwordController,
-                      errorText: passwordError,
-                      validator: validatePassword,
-                      isObscure: true,
-                    ),
-                    // Confirm Password TextField
-                    _buildTextField(
-                      label: 'Confirm Password',
-                      controller: confirmPasswordController,
-                      errorText: confirmPasswordError,
-                      validator: validateConfirmPassword,
-                      isObscure: true,
-                    ),
-
-                    //Register Button
-                    const SizedBox(height: 40.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: GestureDetector(
-                        onTap: register, //call register function above
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child: Center(
-                              child: Text(
-                                'Register',
-                                style: TextStyle(
-                                  color:  Colors.black,
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w900,
+      
+                      // Username TextField
+                      _buildTextField(
+                        label: 'Username',
+                        controller: usernameController,
+                        errorText: usernameError,
+                        validator: validateUsername,
+                      ),
+                      // Email TextField
+                      _buildTextField(
+                        label: 'Email',
+                        controller: emailController,
+                        errorText: emailError,
+                        validator: validateEmail,
+                      ),
+                      // Password TextField
+                      _buildTextField(
+                        label: 'Password',
+                        controller: passwordController,
+                        errorText: passwordError,
+                        validator: validatePassword,
+                        isObscure: true,
+                      ),
+                      // Confirm Password TextField
+                      _buildTextField(
+                        label: 'Confirm Password',
+                        controller: confirmPasswordController,
+                        errorText: confirmPasswordError,
+                        validator: validateConfirmPassword,
+                        isObscure: true,
+                      ),
+      
+                      //Register Button
+                      const SizedBox(height: 40.0),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            final isValidUsername = validateUsername(usernameController.text.trim());
+                            final isValidEmail = emailError == null;
+                            final isValidPassword = validatePassword(passwordController.text.trim());
+                            final isValidConfirmPassword = validateConfirmPassword(confirmPasswordController.text.trim());
+      
+                            if (isValidUsername && isValidEmail && isValidPassword && isValidConfirmPassword) {
+                              context.read<AuthBloc>().add(
+                                RegisterRequested(
+                                  usernameController.text.trim(),
+                                  emailController.text.trim(),
+                                  passwordController.text.trim(),
+                                ),
+                              );
+                            }
+                          },
+      
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: Center(
+                                child: Text(
+                                  'Register',
+                                  style: TextStyle(
+                                    color:  Colors.black,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w900,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-
-                    //Already a member? Login Now
-                    const SizedBox(height: 10.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Already a member?  ',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: widget.showLoginPage,
-                          child: Text(
-                            'Login Now',
+      
+                      //Already a member? Login Now
+                      const SizedBox(height: 10.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Already a member?  ',
                             style: TextStyle(
-                              color: Colors.cyanAccent,
-                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                               fontSize: 18,
-                              decoration: TextDecoration.underline,
-                              decorationColor: Colors.cyanAccent,
-                              decorationThickness: 2,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-
-                  ],
+                          GestureDetector(
+                            onTap: widget.showLoginPage,
+                            child: Text(
+                              'Login Now',
+                              style: TextStyle(
+                                color: Colors.cyanAccent,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 18,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.cyanAccent,
+                                decorationThickness: 2,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+      
+                    ],
+                  ),
                 ),
               ),
             ),

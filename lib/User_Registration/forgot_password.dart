@@ -1,6 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_recipe/Share_Services/background_image_container.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'auth_bloc.dart';
+
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -83,141 +85,141 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return true;
   }
 
-  Future passwordReset() async{
-    try{
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: emailController.text.trim());
-      showDialog(
-        context: context, builder: (context){
-          return AlertDialog(
-            content: Text("✅ Reset password link sent successfully! \n  Please check your email"),
-          );
-        }
-      );//showDialog
-    }
-    on FirebaseAuthException catch (e){
-     print(e);
-     showDialog(
-       context: context, builder: (context){
-         return AlertDialog(
-            content: Text(e.message.toString()),
-         );
-       }
-     );//showDialog
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.white),
-      ),
-      body: BackgroundContainer(
-        child: SafeArea(
-          child: Center(
-            child: GestureDetector(
-              onTap: () {
-                // Unfocus the text field and hide the keyboard when tapping outside
-                FocusScope.of(context).unfocus();
-              },
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    //Forgot Password?
-                    const Text(
-                      'Forgot Password?',
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        } else if (state is AuthUnauthenticated) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Reset password link sent! Check your email.'),
+            ),
+          );
+          Navigator.pop(context); // Go back to the login page after sending
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          iconTheme: IconThemeData(color: Colors.white),
+        ),
+        body: BackgroundContainer(
+          child: SafeArea(
+            child: Center(
+              child: GestureDetector(
+                onTap: () {
+                  // Unfocus the text field and hide the keyboard when tapping outside
+                  FocusScope.of(context).unfocus();
+                },
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      //Forgot Password?
+                      const Text(
+                        'Forgot Password?',
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
 
-                    //Guide Message
-                    SizedBox(height: 50.0),
-                    Text(
-                      'We will send a reset password link to your email below:',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      //Guide Message
+                      SizedBox(height: 50.0),
+                      Text(
+                        'We will send a reset password link to your email below:',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
 
-                    //Email Textfield
-                    SizedBox(height: 10.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
+                      //Email Textfield
+                      SizedBox(height: 10.0),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(
+                                  color: emailError == null ? Colors.black : Colors.red,
+                                  width: 3,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 20.0),
+                                child: TextField(
+                                  controller: emailController,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: 'Email',
+                                    hintStyle: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.bold),
+                                    counterText: "", // Removes the character counter display
+                                  ),
+                                  maxLength: 40, // Set maximum length
+                                  onChanged: (value) => validateEmail(value),
+                                ),
+                              ),
+                            ),
+                            if (emailError != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 5.0),
+                                child: Text(
+                                  emailError!,
+                                  style: TextStyle(color: Colors.redAccent[400], fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      //Send Link Button
+                      const SizedBox(height: 40.0),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            if (validateEmail(emailController.text.trim())) {
+                              context.read<AuthBloc>().add(
+                                PasswordResetRequested(emailController.text.trim()),
+                              );
+                            }
+                          },
+                          child: Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              border: Border.all(
-                                color: emailError == null ? Colors.black : Colors.red,
-                                width: 3,
-                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 20.0),
-                              child: TextField(
-                                controller: emailController,
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: 'Email',
-                                  hintStyle: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.bold),
-                                  counterText: "", // Removes the character counter display
-                                ),
-                                maxLength: 40, // Set maximum length
-                                onChanged: (value) => validateEmail(value),
-                              ),
-                            ),
-                          ),
-                          if (emailError != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 5.0),
-                              child: Text(
-                                emailError!,
-                                style: TextStyle(color: Colors.redAccent[400], fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-
-                    //Send Link Button
-                    const SizedBox(height: 40.0),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: GestureDetector(
-                        onTap: passwordReset, //call login function above
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child: Center(
-                              child: Text(
-                                'Send Link',
-                                style: TextStyle(
-                                  color:  Colors.black,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 26,
+                            child: const Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: Center(
+                                child: Text(
+                                  'Send Link',
+                                  style: TextStyle(
+                                    color:  Colors.black,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 26,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
