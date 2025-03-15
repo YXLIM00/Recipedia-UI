@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fyp_recipe/User_Profile/payment_page.dart';
 import 'package:fyp_recipe/User_Registration/auth_state_change.dart';
 import 'package:fyp_recipe/Share_Services/user_bottom_nav_bar.dart';
 
@@ -41,6 +42,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   bool _isPersonalInfoExpanded = false;
   bool _isHealthInfoExpanded = false;
   bool _isDietaryInfoExpanded = false;
+  bool _isPremiumFeaturesExpanded = false;
 
   @override
   void initState() {
@@ -62,6 +64,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   //---------------------Personal Information Section---------------------------
+
+  // Gender
   void _showGenderSelectionDialog(BuildContext context) {
     String? selectedGender = userData?['sex']; // Store the current value
 
@@ -137,6 +141,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  //Age
   void _showAgeInputDialog(BuildContext context) {
     TextEditingController ageController = TextEditingController(
       text: userData?['age']?.toString() ?? '',
@@ -230,6 +235,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  //Height
   void _showHeightInputDialog(BuildContext context) {
     TextEditingController heightController = TextEditingController(
       text: userData?['height']?.toString() ?? '',
@@ -323,6 +329,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  //Weight
   void _showWeightInputDialog(BuildContext context) {
     TextEditingController weightController = TextEditingController(
       text: userData?['weight']?.toString() ?? '',
@@ -416,6 +423,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  //Activity Factor
   String _getActivityFactorDescription(double? factor) {
     if (factor == null) return "Not available"; // Handle null case
 
@@ -518,10 +526,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
       });
     }
   }
+
   //---------------------Personal Information Section---------------------------
 
 
   //---------------------Health Information Section-----------------------------
+
+  //Blood Glucose Level
   void _showBloodGlucoseLevelDialog(BuildContext context) {
     String? selectedLevel = userData?['blood_glucose_level']; // Store the current value
 
@@ -597,6 +608,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  //Blood Pressure Level
   void _showBloodPressureLevelDialog(BuildContext context) {
     String? selectedLevel = userData?['blood_pressure_level']; // Store current value
 
@@ -672,6 +684,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  //Blood Cholesterol Level
   void _showBloodCholesterolLevelDialog(BuildContext context) {
     String? selectedLevel = userData?['blood_cholesterol_level']; // Store current value
 
@@ -747,6 +760,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  //Diabetes
   void _showDiabetesDialog(BuildContext context) {
     String? selectedDiabetes = userData?['diabetes']; // Store current value
 
@@ -821,9 +835,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
       });
     }
   }
+
   //---------------------Health Information Section-----------------------------
 
-  //---------------------Dietary Information Section-----------------------------
+
+  //---------------------Dietary Information Section----------------------------
+
+  //Diet Purpose
   void _showDietPurposeDialog(BuildContext context) {
     String? selectedPurpose = userData?['diet_purpose']; // Store current value
 
@@ -900,6 +918,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  //Allergies
   void _showAllergiesDialog(BuildContext context) {
     List<String> selectedAllergies = List<String>.from(userData?['allergies'] ?? []);
 
@@ -959,12 +978,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
       });
     }
   }
-  //---------------------Dietary Information Section-----------------------------
+
+  //---------------------Dietary Information Section----------------------------
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //AppBar
       appBar: AppBar(
         title: Text(
           'Recipedia',
@@ -1141,7 +1162,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
         
             // Health Information Section
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.0),
@@ -1262,7 +1283,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
         
             // Dietary Information Section
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.0),
@@ -1377,6 +1398,129 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ),
               ),
             ),
+
+            // Premium Features Section
+            SizedBox(height: 10),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              elevation: 5,
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Section Title with Dropdown Icon
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Premium Features 👑",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            _isPremiumFeaturesExpanded
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                            color: Colors.indigo[400],
+                            size: 26,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPremiumFeaturesExpanded = !_isPremiumFeaturesExpanded;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+
+                    // Expanded Content
+                    if (_isPremiumFeaturesExpanded) ...[
+                      const SizedBox(height: 10),
+
+                      // Premium Features List
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          ListTile(
+                            leading: Icon(Icons.lock_open_outlined, color: Colors.amber,),
+                            title: Text("Dynamic UI with Animations"),
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.lock_open_outlined, color: Colors.amber,),
+                            title: Text("Weekly Health Report Generation"),
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.lock_open_outlined, color: Colors.amber,),
+                            title: Text("Priority Access to New Recipes"),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Unlock Now Button
+                      Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PaymentPage(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              // Gradient for the 3D look
+                              gradient: LinearGradient(
+                                colors: [Colors.amber.shade200, Colors.amber.shade400],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                // Adding shadows for a deeper 3D effect
+                                BoxShadow(
+                                  color: Colors.grey.shade500,
+                                  offset: const Offset(5, 5),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                ),
+                                BoxShadow(
+                                  color: Colors.white,
+                                  offset: const Offset(-5, -5),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                            child: const Text(
+                              'Unlock Now!',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    ],
+                  ],
+                ),
+              ),
+            ),
+
+
           ],
         ),
       ),
